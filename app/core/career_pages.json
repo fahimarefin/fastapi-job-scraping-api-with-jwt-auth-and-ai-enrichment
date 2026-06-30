@@ -1,7 +1,16 @@
 [
   {
-    "company": "Greenhouse (Lever Jobs Board)",
-    "url": "https://jobs.lever.co/anthropic",
+    "company": "Anthropic",
+    "url": "https://boards.greenhouse.io/anthropic",
+    "list_selector": "tr.job-post",
+    "title_selector": "p.body.body--medium",
+    "location_selector": "p.body.body__secondary",
+    "link_selector": "td.cell a",
+    "link_attr": "href"
+  },
+  {
+    "company": "Mistral AI",
+    "url": "https://jobs.lever.co/mistral",
     "list_selector": "div.posting",
     "title_selector": "h5",
     "location_selector": "span.sort-by-location",
@@ -9,21 +18,30 @@
     "link_attr": "href"
   },
   {
-    "company": "Hugging Face",
-    "url": "https://apply.workable.com/hugging-face/",
-    "list_selector": "li[data-ui='job']",
-    "title_selector": "h3",
-    "location_selector": "span[data-ui='job-location']",
-    "link_selector": "a",
+    "company": "Scale AI",
+    "url": "https://boards.greenhouse.io/scaleai",
+    "list_selector": "tr.job-post",
+    "title_selector": "p.body.body--medium",
+    "location_selector": "p.body.body__secondary",
+    "link_selector": "td.cell a",
     "link_attr": "href"
   },
   {
-    "company": "OpenAI",
-    "url": "https://openai.com/careers/",
-    "list_selector": "a[href*='/careers/']",
-    "title_selector": "h3",
-    "location_selector": "p",
-    "link_selector": "a",
+    "company": "Perplexity AI",
+    "url": "https://jobs.lever.co/perplexity",
+    "list_selector": "div.posting",
+    "title_selector": "h5",
+    "location_selector": "span.sort-by-location",
+    "link_selector": "a.posting-btn-submit",
+    "link_attr": "href"
+  },
+  {
+    "company": "Stability AI",
+    "url": "https://jobs.lever.co/stability-ai",
+    "list_selector": "div.posting",
+    "title_selector": "h5",
+    "location_selector": "span.sort-by-location",
+    "link_selector": "a.posting-btn-submit",
     "link_attr": "href"
   }
 ]
