@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     app_version: str = "1.0.0"
     debug: bool = False
 
-    # Networking
     request_timeout: int = 15
     max_retries: int = 3
     default_user_agent: str = (
@@ -17,13 +16,8 @@ class Settings(BaseSettings):
         "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
     )
 
-    # Optional proxy (e.g. "http://user:pass@host:port") to reduce blocking
     http_proxy: str | None = None
-
-    # Career page sources are config-driven, see app/scrapers/career_pages.py
     career_pages_config_path: str = "app/core/career_pages.json"
-
-    # Simple in-memory rate limit between outbound scrape requests (seconds)
     min_request_interval: float = 1.0
 
 

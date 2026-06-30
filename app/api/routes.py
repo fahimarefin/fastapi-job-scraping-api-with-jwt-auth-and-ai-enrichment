@@ -1,109 +1,64 @@
 import asyncio
 import logging
+from collections import defaultdict
 
 from fastapi import APIRouter, HTTPException, Query
 
-from app.models.schemas import (
-    AggregatedSearchResponse,
-    JobSearchResponse,
-    JobSource,
-)
+from app.models.schemas import AggregatedSearchResponse, JobListing, JobSearchResponse, JobSource
 from app.scrapers.career_pages import CareerPageScraper
-from app.scrapers.indeed import IndeedScraper
-from app.scrapers.linkedin import LinkedInScraper
+from app.scrapers.jobspy_scraper import JobSpyScraper
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])
 
-_scrapers = {
-    JobSource.INDEED: IndeedScraper(),
-    JobSource.LINKEDIN: LinkedInScraper(),
-    JobSource.CAREER_PAGE: CareerPageScraper(),
-}
-
-
-# @router.get("/indeed", response_model=JobSearchResponse)
-# async def search_indeed(
-#     query: str = Query(..., description="Job title or keywords"),
-#     location: str | None = Query(None),
-#     limit: int = Query(25, ge=1, le=100),
-# ):
-#     try:
-#         results = await _scrapers[JobSource.INDEED].search(query, location, limit)
-#     except Exception as exc:  # noqa: BLE001
-#         logger.exception("Indeed scrape failed")
-#         raise HTTPException(status_code=502, detail=f"Indeed scrape failed: {exc}") from exc
-
-#     return JobSearchResponse(
-#         source=JobSource.INDEED, query=query, location=location, count=len(results), results=results
-#     )
-
-
-# @router.get("/linkedin", response_model=JobSearchResponse)
-# async def search_linkedin(
-#     query: str = Query(..., description="Job title or keywords"),
-#     location: str | None = Query(None),
-#     limit: int = Query(25, ge=1, le=100),
-# ):
-#     try:
-#         results = await _scrapers[JobSource.LINKEDIN].search(query, location, limit)
-#     except Exception as exc:  # noqa: BLE001
-#         logger.exception("LinkedIn scrape failed")
-#         raise HTTPException(status_code=502, detail=f"LinkedIn scrape failed: {exc}") from exc
-
-#     return JobSearchResponse(
-#         source=JobSource.LINKEDIN, query=query, location=location, count=len(results), results=results
-#     )
-
-
-# @router.get("/career-pages", response_model=JobSearchResponse)
-# async def search_career_pages(
-#     query: str = Query("", description="Job title keyword filter, empty returns all"),
-#     location: str | None = Query(None),
-#     limit: int = Query(25, ge=1, le=100),
-# ):
-#     try:
-#         results = await _scrapers[JobSource.CAREER_PAGE].search(query, location, limit)
-#     except Exception as exc:  # noqa: BLE001
-#         logger.exception("Career page scrape failed")
-#         raise HTTPException(status_code=502, detail=f"Career page scrape failed: {exc}") from exc
-
-#     return JobSearchResponse(
-#         source=JobSource.CAREER_PAGE, query=query, location=location, count=len(results), results=results
-#     )
+# JobSpy handles Indeed, LinkedIn, Glassdoor, ZipRecruiter in one call.
+# CareerPageScraper handles custom company career pages independently.
+_jobspy = JobSpyScraper(sites=["indeed", "linkedin", "glassdoor", "zip_recruiter"])
+_career_page_scraper = CareerPageScraper()
 
 
 @router.get("/search", response_model=AggregatedSearchResponse)
 async def search_all(
-    query: str = Query(..., description="Job title or keywords"),
-    location: str | None = Query(None),
-    limit: int = Query(25, ge=1, le=100),
+    query: str = Query(..., description="Job title, keywords, etc."),
+    location: str | None = Query(None, description="City, state, country, or 'Remote'"),
+    limit: int = Query(25, ge=1, le=100, description="Max results per source"),
 ):
-    """Search Indeed, LinkedIn, and configured career pages concurrently."""
-
-    async def run(source: JobSource):
-        try:
-            return source, await _scrapers[source].search(query, location, limit), None
-        except Exception as exc:  # noqa: BLE001
-            logger.exception("%s scrape failed", source.value)
-            return source, [], str(exc)
-
-    outcomes = await asyncio.gather(*(run(s) for s in _scrapers))
-
-    results_by_source: dict[str, list] = {}
     errors: dict[str, str] = {}
-    total = 0
+    results_by_source: dict[str, list[JobListing]] = defaultdict(list)
 
-    for source, results, error in outcomes:
-        results_by_source[source.value] = results
-        total += len(results)
-        if error:
-            errors[source.value] = error
+    # --- JobSpy: scrapes multiple boards in one blocking call (run in thread) ---
+    async def run_jobspy() -> None:
+        try:
+            listings = await _jobspy.search(query, location, limit)
+            for job in listings:
+                results_by_source[job.source.value].append(job)
+        except Exception as exc:
+            logger.exception("jobspy scrape failed")
+            # Mark all jobspy-backed sources as errored
+            for site in _jobspy.sites:
+                errors[site] = str(exc)
+
+    # --- Career pages: custom HTML scraping ---
+    async def run_career_pages() -> None:
+        try:
+            listings = await _career_page_scraper.search(query, location, limit)
+            results_by_source[JobSource.CAREER_PAGE.value].extend(listings)
+        except Exception as exc:
+            logger.exception("career_page scrape failed")
+            errors[JobSource.CAREER_PAGE.value] = str(exc)
+
+    await asyncio.gather(run_jobspy(), run_career_pages())
+
+    # Enforce per-source limit (jobspy may return more than requested)
+    for source_key in results_by_source:
+        results_by_source[source_key] = results_by_source[source_key][:limit]
+
+    total = sum(len(v) for v in results_by_source.values())
 
     return AggregatedSearchResponse(
         query=query,
         location=location,
         total_results=total,
-        results_by_source=results_by_source,
+        results_by_source=dict(results_by_source),
         errors=errors,
     )

@@ -14,13 +14,6 @@ settings = get_settings()
 
 
 class CareerPageScraper(BaseScraper):
-    """Generic scraper driven by a JSON config of CSS selectors per company.
-
-    Since every company's careers page has different markup, this scraper
-    reads target sites + selectors from app/core/career_pages.json so new
-    companies can be added without touching code.
-    """
-
     source_name = "career_page"
 
     def __init__(self) -> None:
@@ -42,7 +35,7 @@ class CareerPageScraper(BaseScraper):
         for cfg in self.configs:
             try:
                 response = await fetch(cfg["url"])
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 logger.error("Career page fetch failed for %s: %s", cfg.get("company"), exc)
                 continue
 

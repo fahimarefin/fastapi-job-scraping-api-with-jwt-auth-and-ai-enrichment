@@ -2,12 +2,14 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field
 
 
 class JobSource(str, Enum):
     INDEED = "indeed"
     LINKEDIN = "linkedin"
+    GLASSDOOR = "glassdoor"
+    ZIP_RECRUITER = "zip_recruiter"
     CAREER_PAGE = "career_page"
 
 
@@ -20,6 +22,7 @@ class JobListing(BaseModel):
     posted_at: Optional[str] = None
     salary: Optional[str] = None
     job_type: Optional[str] = None
+    is_remote: Optional[bool] = None
     source: JobSource
     scraped_at: datetime = Field(default_factory=datetime.utcnow)
 

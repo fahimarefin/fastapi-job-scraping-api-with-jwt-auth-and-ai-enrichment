@@ -8,10 +8,6 @@ from app.utils.http_client import fetch
 
 logger = logging.getLogger(__name__)
 
-# LinkedIn's unauthenticated "guest" job search endpoint. It's not an
-# official/public API, has no SLA, and LinkedIn aggressively rate-limits
-# or blocks repeat callers. For production use, the official LinkedIn
-# Talent/Jobs API (partner access required) is the supported path.
 LINKEDIN_GUEST_SEARCH_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
 
 
@@ -19,15 +15,11 @@ class LinkedInScraper(BaseScraper):
     source_name = "linkedin"
 
     async def search(self, query: str, location: str | None, limit: int) -> list[JobListing]:
-        params = {
-            "keywords": query,
-            "location": location or "",
-            "start": 0,
-        }
+        params = {"keywords": query, "location": location or "", "start": 0}
 
         try:
             response = await fetch(LINKEDIN_GUEST_SEARCH_URL, params=params)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.error("LinkedIn request failed: %s", exc)
             raise
 
