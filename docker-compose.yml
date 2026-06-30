@@ -1,0 +1,15 @@
+services:
+  job-scraper-api:
+    build: .
+    container_name: job-scraper-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=false
+      - REQUEST_TIMEOUT=15
+      - MAX_RETRIES=3
+      - MIN_REQUEST_INTERVAL=1.0
+      # - HTTP_PROXY=http://user:pass@host:port
+    volumes:
+      - ./app/core/career_pages.json:/app/app/core/career_pages.json
+    restart: unless-stopped
