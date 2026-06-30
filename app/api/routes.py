@@ -2,9 +2,9 @@ import asyncio
 import logging
 from collections import defaultdict
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 
-from app.models.schemas import AggregatedSearchResponse, JobListing, JobSearchResponse, JobSource
+from app.models.schemas import AggregatedSearchResponse, JobListing, JobSource
 from app.scrapers.career_pages import CareerPageScraper
 from app.scrapers.jobspy_scraper import JobSpyScraper
 
@@ -34,8 +34,7 @@ async def search_all(
                 results_by_source[job.source.value].append(job)
         except Exception as exc:
             logger.exception("jobspy scrape failed")
-            # Mark all jobspy-backed sources as errored
-            for site in _jobspy.sites:
+            for site in _jobspy.active_sites:
                 errors[site] = str(exc)
 
     # --- Career pages: custom HTML scraping ---

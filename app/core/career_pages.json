@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "company": "Greenhouse (Lever Jobs Board)",
+    "url": "https://jobs.lever.co/anthropic",
+    "list_selector": "div.posting",
+    "title_selector": "h5",
+    "location_selector": "span.sort-by-location",
+    "link_selector": "a.posting-btn-submit",
+    "link_attr": "href"
+  },
+  {
+    "company": "Hugging Face",
+    "url": "https://apply.workable.com/hugging-face/",
+    "list_selector": "li[data-ui='job']",
+    "title_selector": "h3",
+    "location_selector": "span[data-ui='job-location']",
+    "link_selector": "a",
+    "link_attr": "href"
+  },
+  {
+    "company": "OpenAI",
+    "url": "https://openai.com/careers/",
+    "list_selector": "a[href*='/careers/']",
+    "title_selector": "h3",
+    "location_selector": "p",
+    "link_selector": "a",
+    "link_attr": "href"
+  }
+]
