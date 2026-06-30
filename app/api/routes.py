@@ -1,9 +1,8 @@
+#app/api/routes.py
 import asyncio
 import logging
 from collections import defaultdict
-
 from fastapi import APIRouter, Query
-
 from app.models.schemas import AggregatedSearchResponse, JobListing, JobSource
 from app.scrapers.career_pages import CareerPageScraper
 from app.scrapers.jobspy_scraper import JobSpyScraper

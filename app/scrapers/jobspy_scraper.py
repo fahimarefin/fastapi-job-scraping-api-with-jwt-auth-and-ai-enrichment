@@ -1,17 +1,4 @@
-"""
-JobSpy-backed scraper.
-
-jobspy (python-jobspy) wraps Indeed, LinkedIn, Glassdoor, ZipRecruiter and
-Google Jobs under one `scrape_jobs()` call.  Because it is fully synchronous
-(uses `requests` internally) we run it in a thread-pool executor so we never
-block the FastAPI event loop.
-
-Key design:
-  - Each site is scraped in a *separate* thread so a 403 on one board never
-    eats the result quota of the others.
-  - Glassdoor + ZipRecruiter are auto-skipped when no proxies are configured
-    because they reliably return 403 from plain server IPs.
-"""
+#app/scrapers/jobspy_scraper.py
 from __future__ import annotations
 
 import asyncio
