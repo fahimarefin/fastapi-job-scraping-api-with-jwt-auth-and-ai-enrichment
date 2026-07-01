@@ -1,8 +1,142 @@
+#app/models/schemas.py
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, Field
+
+
+# ---------------------------------------------------------------------------
+# Scraping constants — nothing is user-configurable
+# ---------------------------------------------------------------------------
+
+SCRAPE_LOCATION: str = "USA"
+SCRAPE_LIMIT: int = 50          # results requested per role per source
+
+
+# ---------------------------------------------------------------------------
+# Hardcoded role catalogue — 10 industries, all roles pre-defined
+# ---------------------------------------------------------------------------
+
+ALL_ROLES_BY_INDUSTRY: dict[str, list[str]] = {
+    "Information Technology": [
+        "Chief Technology Officer",
+        "IT Executive",
+        "IT Manager",
+        "IT Director",
+        "IT Architect",
+        "Software Developer",
+        "Full Stack Developer",
+        "Front-End Developer",
+        "Back-End Developer",
+        "Mobile Application Developer",
+        "Desktop Application Developer",
+        "PHP Developer",
+        "JavaScript Developer",
+        "TypeScript Developer",
+        "DevOps Engineer",
+        "Cloud Engineer",
+        "Cybersecurity Specialist",
+        "Network Administrator",
+        "Systems Administrator",
+        "IT Analyst",
+        "QA Testing Specialist",
+        "Data Business Intelligence Specialist",
+        "Technical Support Specialist",
+    ],
+    "Medical & Healthcare": [
+        "Physician",
+        "Doctor",
+        "Registered Nurse",
+        "Licensed Practical Nurse",
+        "Nurse Practitioner",
+        "Allied Health Professional",
+        "Medical Technologist",
+        "Healthcare Administrator",
+        "Mental Health Professional",
+        "Paramedic",
+        "Healthcare Support Staff",
+    ],
+    "Accounting & Finance": [
+        "Accountant",
+        "Bookkeeper",
+        "Financial Analyst",
+        "Controller",
+        "Finance Manager",
+        "Accounting Manager",
+    ],
+    "Executive / C-Suite": [
+        "Chief Executive Officer",
+        "Chief Operating Officer",
+        "Chief Financial Officer",
+        "Chief Information Officer",
+        "Chief Technology Officer",
+        "Chief Human Resources Officer",
+        "Vice President",
+        "Director",
+        "Senior Executive",
+    ],
+    "Business Administration": [
+        "Office Manager",
+        "Administrative Assistant",
+        "Executive Assistant",
+        "Receptionist",
+        "Front Office Administrator",
+        "Back Office Administrator",
+        "Office Coordinator",
+        "Mailroom Personnel",
+        "Clerical Staff",
+        "Data Entry Personnel",
+    ],
+    "Legal Support": [
+        "Legal Secretary",
+        "Executive Legal Assistant",
+        "Legal Administrative Support",
+    ],
+    "Administrative & Office Support": [
+        "Office Manager",
+        "Administrative Assistant",
+        "Executive Assistant",
+        "Receptionist",
+        "Office Coordinator",
+        "Clerical Staff",
+        "Data Entry Personnel",
+    ],
+    "Customer Service & Front Office": [
+        "Customer Service Representative",
+        "Front Office Administrator",
+        "Front Desk Receptionist",
+        "Call Center Agent",
+        "Client Support Specialist",
+    ],
+    "Government (Public Sector)": [
+        "Government Administrator",
+        "Public Sector Manager",
+        "Policy Analyst",
+        "Government IT Specialist",
+        "Public Health Officer",
+    ],
+    "Commercial (Private Sector)": [
+        "Sales Manager",
+        "Business Development Manager",
+        "Account Executive",
+        "Commercial Director",
+        "Regional Manager",
+    ],
+}
+
+# Flat deduplicated list of every role across all industries
+ALL_ROLES: list[str] = list(dict.fromkeys(
+    role
+    for roles in ALL_ROLES_BY_INDUSTRY.values()
+    for role in roles
+))
+
+
+# ---------------------------------------------------------------------------
+# Job board source enum
+# ---------------------------------------------------------------------------
+
+from enum import Enum  # noqa: E402  (kept below constants intentionally)
 
 
 class JobSource(str, Enum):
@@ -13,7 +147,12 @@ class JobSource(str, Enum):
     CAREER_PAGE = "career_page"
 
 
+# ---------------------------------------------------------------------------
+# API response models
+# ---------------------------------------------------------------------------
+
 class JobListing(BaseModel):
+    """A single job posting returned by the scraper."""
     title: str
     company: Optional[str] = None
     location: Optional[str] = None
@@ -27,26 +166,23 @@ class JobListing(BaseModel):
     scraped_at: datetime = Field(default_factory=datetime.utcnow)
 
 
-class JobSearchRequest(BaseModel):
-    query: str = Field(..., examples=["Python Developer"])
-    location: Optional[str] = Field(None, examples=["Remote"])
-    limit: int = Field(25, ge=1, le=100)
-
-
-class JobSearchResponse(BaseModel):
-    source: JobSource
-    query: str
-    location: Optional[str] = None
-    count: int
-    results: list[JobListing]
-
-
-class AggregatedSearchResponse(BaseModel):
-    query: str
-    location: Optional[str] = None
-    total_results: int
-    results_by_source: dict[str, list[JobListing]]
+class RoleResult(BaseModel):
+    """Scraped results for a single role."""
+    role: str
+    industry: str
+    location: str = SCRAPE_LOCATION
+    total: int
+    jobs: list[JobListing]
     errors: dict[str, str] = Field(default_factory=dict)
+
+
+class ScrapeAllResponse(BaseModel):
+    """Top-level response returned by GET /api/v1/jobs/scrape-all."""
+    location: str = SCRAPE_LOCATION
+    results_per_role_requested: int = SCRAPE_LIMIT
+    total_roles_scraped: int
+    total_jobs_found: int
+    industries: dict[str, list[RoleResult]]
 
 
 class HealthResponse(BaseModel):

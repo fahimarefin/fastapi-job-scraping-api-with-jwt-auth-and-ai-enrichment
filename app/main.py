@@ -1,8 +1,7 @@
+#app/main.py
 import logging
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from app.api.routes import router as jobs_router
 from app.core.config import get_settings
 from app.models.schemas import HealthResponse
@@ -18,10 +17,9 @@ app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     description=(
-        "Aggregates job postings from Indeed, LinkedIn, and configured "
-        "company career pages. Educational/personal use only — scraping "
-        "Indeed and LinkedIn is against their Terms of Service; use "
-        "their official APIs for production workloads."
+        "Automatically scrapes job postings across 10 industries and 60+ hardcoded roles. "
+        "No parameters required — location is fixed to USA and limit is 50 results per role. "
+        "Aggregates data from Indeed, LinkedIn, Glassdoor, ZipRecruiter, and custom career pages."
     ),
 )
 

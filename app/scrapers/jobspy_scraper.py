@@ -136,6 +136,10 @@ class JobSpyScraper(BaseScraper):
 
     Proxy-required sites (glassdoor, zip_recruiter) are automatically
     skipped when no proxies are configured.
+
+    Default behaviour (set by the API layer):
+      - location : USA
+      - results  : 50 per source
     """
 
     source_name = "jobspy"

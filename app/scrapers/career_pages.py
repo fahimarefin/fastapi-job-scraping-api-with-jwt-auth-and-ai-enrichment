@@ -1,9 +1,8 @@
+#app/scrapers/career_pages.py
 import json
 import logging
 import os
-
 from bs4 import BeautifulSoup
-
 from app.core.config import get_settings
 from app.models.schemas import JobListing, JobSource
 from app.scrapers.base import BaseScraper
