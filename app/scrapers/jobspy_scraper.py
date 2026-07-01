@@ -15,7 +15,7 @@ from app.scrapers.base import BaseScraper
 logger = logging.getLogger(__name__)
 
 # One reusable executor — keeps the thread count bounded
-_executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="jobspy")
+_executor = ThreadPoolExecutor(max_workers=32, thread_name_prefix="jobspy")
 
 # Map jobspy site name strings → our JobSource enum values
 _SITE_TO_SOURCE: dict[str, JobSource] = {
@@ -139,7 +139,7 @@ class JobSpyScraper(BaseScraper):
 
     Default behaviour (set by the API layer):
       - location : USA
-      - results  : 50 per source
+      - results  : 20 per source
     """
 
     source_name = "jobspy"

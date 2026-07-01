@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     http_proxy: str | None = None
     career_pages_config_path: str = "app/core/career_pages.json"
-    min_request_interval: float = 1.0
+    min_request_interval: float = 0.2
 
 
 @lru_cache
