@@ -1,19 +1,4 @@
 #app/api/routes.py
-"""
-Job scraping routes.
-
-All configuration is hardcoded — no query parameters are accepted.
-  • Location  : USA (always)
-  • Limit      : 20 results per role per source
-  • Roles      : every role in ALL_ROLES_BY_INDUSTRY (defined in schemas.py)
-
-Performance design:
-  1. Roles are DEDUPLICATED across industries before scraping.
-     "Office Manager" appears in 2 industries but is scraped only once;
-     its results are copied to both industries in the response.
-  2. JobSpy and CareerPageScraper run CONCURRENTLY inside each role task.
-  3. All unique roles are gathered at once, capped by a semaphore.
-"""
 import asyncio
 import logging
 from collections import defaultdict
