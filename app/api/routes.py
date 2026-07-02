@@ -18,22 +18,38 @@ import asyncio
 import logging
 from collections import defaultdict
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Query
 
 from app.models.schemas import (
     ALL_ROLES_BY_INDUSTRY,
+    CATEGORY_SLUG_MAP,
     SCRAPE_LIMIT,
     SCRAPE_LOCATION,
+    CategoriesResponse,
+    CategoryInfo,
+    DuplicateCheckRequest,
+    DuplicateCheckResponse,
     JobListing,
     JobSource,
+    MarkProcessedRequest,
+    MarkProcessedResponse,
     RoleResult,
     ScrapeAllResponse,
+    UnprocessedJobsResponse,
 )
 from app.scrapers.career_pages import CareerPageScraper
 from app.scrapers.jobspy_scraper import JobSpyScraper
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])
+categories_router = APIRouter(prefix="/api/v1", tags=["categories"])
+
+# ---------------------------------------------------------------------------
+# In-memory processed-URL store
+# Tracks job URLs that have already been handled by downstream consumers.
+# Wiped on server restart — upgrade to Redis/SQLite for persistence.
+# ---------------------------------------------------------------------------
+_processed_urls: set[str] = set()
 
 _jobspy = JobSpyScraper(sites=["indeed", "linkedin", "glassdoor", "zip_recruiter"])
 _career_page_scraper = CareerPageScraper()
@@ -175,4 +191,177 @@ async def scrape_all() -> ScrapeAllResponse:
         total_roles_scraped=total_roles,
         total_jobs_found=total_jobs,
         industries=dict(industries_result),
+    )
+
+
+# ---------------------------------------------------------------------------
+# GET /api/v1/categories
+# ---------------------------------------------------------------------------
+
+@categories_router.get(
+    "/categories",
+    response_model=CategoriesResponse,
+    summary="List all job categories",
+    description=(
+        "Returns every available category (industry) with its URL-safe slug, "
+        "display name, and the list of roles that will be scraped for it.\n\n"
+        "Use the `slug` value as the `category` query parameter for "
+        "`GET /api/v1/jobs/unprocessed`."
+    ),
+)
+async def get_categories() -> CategoriesResponse:
+    """Return all categories derived from CATEGORY_SLUG_MAP and ALL_ROLES_BY_INDUSTRY."""
+    categories: list[CategoryInfo] = []
+    for slug, industry_name in CATEGORY_SLUG_MAP.items():
+        roles = ALL_ROLES_BY_INDUSTRY.get(industry_name, [])
+        categories.append(
+            CategoryInfo(
+                slug=slug,
+                name=industry_name,
+                role_count=len(roles),
+                roles=roles,
+            )
+        )
+    return CategoriesResponse(total=len(categories), categories=categories)
+
+
+# ---------------------------------------------------------------------------
+# POST /api/v1/jobs/check-duplicates
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "/check-duplicates",
+    response_model=DuplicateCheckResponse,
+    summary="Check which job URLs are already known",
+    description=(
+        "Accepts a list of job URLs and returns two buckets: "
+        "URLs already in the processed store (`duplicates`) and "
+        "URLs that are genuinely new (`new`)."
+    ),
+)
+async def check_duplicates(body: DuplicateCheckRequest) -> DuplicateCheckResponse:
+    duplicates: list[str] = []
+    new: list[str] = []
+    for url in body.urls:
+        if url and url in _processed_urls:
+            duplicates.append(url)
+        else:
+            new.append(url)
+    return DuplicateCheckResponse(
+        total_checked=len(body.urls),
+        duplicates=duplicates,
+        new=new,
+    )
+
+
+# ---------------------------------------------------------------------------
+# PATCH /api/v1/jobs/mark-processed
+# ---------------------------------------------------------------------------
+
+@router.patch(
+    "/mark-processed",
+    response_model=MarkProcessedResponse,
+    summary="Mark job URLs as processed",
+    description=(
+        "Adds the supplied job URLs to the in-memory processed store. "
+        "Subsequent calls to `check-duplicates` or `unprocessed` will "
+        "exclude these URLs from results."
+    ),
+)
+async def mark_processed(body: MarkProcessedRequest) -> MarkProcessedResponse:
+    before = len(_processed_urls)
+    valid_urls = [u for u in body.urls if u]
+    _processed_urls.update(valid_urls)
+    newly_marked = len(_processed_urls) - before
+    return MarkProcessedResponse(
+        marked=newly_marked,
+        total_processed=len(_processed_urls),
+        message=f"{newly_marked} new URL(s) added; {len(_processed_urls)} total in store.",
+    )
+
+
+# ---------------------------------------------------------------------------
+# GET /api/v1/jobs/unprocessed?category=<slug>
+# ---------------------------------------------------------------------------
+
+@router.get(
+    "/unprocessed",
+    response_model=UnprocessedJobsResponse,
+    summary="Scrape unprocessed jobs for a category",
+    description=(
+        "Scrapes all roles in the given category and returns only jobs whose "
+        "URL has **not** been marked as processed yet.\n\n"
+        "- Use `GET /api/v1/categories` to discover valid `category` slugs.\n"
+        "- Location is fixed to USA; limit is 20 results per role per source.\n"
+        "- After consuming the results, call `PATCH /api/v1/jobs/mark-processed` "
+        "to exclude them from future responses."
+    ),
+)
+async def get_unprocessed_jobs(
+    category: str = Query(
+        ...,
+        description="Category slug (e.g. 'IT', 'healthcare'). See GET /api/v1/categories.",
+        examples=["IT", "healthcare", "finance"],
+    ),
+) -> UnprocessedJobsResponse:
+    # --- Resolve slug → industry name ---
+    industry_name = CATEGORY_SLUG_MAP.get(category)
+    if not industry_name:
+        valid = ", ".join(CATEGORY_SLUG_MAP.keys())
+        raise HTTPException(
+            status_code=404,
+            detail=f"Unknown category slug '{category}'. Valid slugs: {valid}",
+        )
+
+    roles = ALL_ROLES_BY_INDUSTRY.get(industry_name, [])
+    if not roles:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No roles found for category '{industry_name}'.",
+        )
+
+    logger.info(
+        "unprocessed[%s]: scraping %d roles in '%s'",
+        category, len(roles), industry_name,
+    )
+
+    # --- Scrape all roles concurrently (cap concurrency with semaphore) ---
+    sem = asyncio.Semaphore(10)
+
+    async def _scrape_with_sem(role: str) -> RoleResult:
+        async with sem:
+            return await _scrape_role(role, industry_name)
+
+    role_results: list[RoleResult] = await asyncio.gather(
+        *[_scrape_with_sem(role) for role in roles]
+    )
+
+    # --- Flatten all listings ---
+    all_jobs: list[JobListing] = []
+    for result in role_results:
+        all_jobs.extend(result.jobs)
+
+    total_scraped = len(all_jobs)
+
+    # --- Filter out already-processed URLs ---
+    unprocessed_jobs = [
+        job for job in all_jobs
+        if not job.url or job.url not in _processed_urls
+    ]
+
+    logger.info(
+        "unprocessed[%s]: %d scraped, %d unprocessed (%d filtered)",
+        category,
+        total_scraped,
+        len(unprocessed_jobs),
+        total_scraped - len(unprocessed_jobs),
+    )
+
+    return UnprocessedJobsResponse(
+        category_slug=category,
+        category_name=industry_name,
+        location=SCRAPE_LOCATION,
+        total_scraped=total_scraped,
+        total_unprocessed=len(unprocessed_jobs),
+        jobs=unprocessed_jobs,
     )

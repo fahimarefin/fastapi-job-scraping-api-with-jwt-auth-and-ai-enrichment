@@ -133,6 +133,25 @@ ALL_ROLES: list[str] = list(dict.fromkeys(
 
 
 # ---------------------------------------------------------------------------
+# Category slug map  (short URL-safe key → verbose industry name)
+# Used by GET /api/v1/categories and GET /api/v1/jobs/unprocessed?category=
+# ---------------------------------------------------------------------------
+
+CATEGORY_SLUG_MAP: dict[str, str] = {
+    "IT":               "Information Technology",
+    "healthcare":       "Medical & Healthcare",
+    "finance":          "Accounting & Finance",
+    "executive":        "Executive / C-Suite",
+    "business":         "Business Administration",
+    "legal":            "Legal Support",
+    "admin":            "Administrative & Office Support",
+    "customer-service": "Customer Service & Front Office",
+    "government":       "Government (Public Sector)",
+    "commercial":       "Commercial (Private Sector)",
+}
+
+
+# ---------------------------------------------------------------------------
 # Job board source enum
 # ---------------------------------------------------------------------------
 
@@ -148,7 +167,7 @@ class JobSource(str, Enum):
 
 
 # ---------------------------------------------------------------------------
-# API response models
+# API response models — existing
 # ---------------------------------------------------------------------------
 
 class JobListing(BaseModel):
@@ -188,3 +207,55 @@ class ScrapeAllResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     version: str
+
+
+# ---------------------------------------------------------------------------
+# API response models — category-based endpoints
+# ---------------------------------------------------------------------------
+
+class CategoryInfo(BaseModel):
+    """A single industry category with its slug and role list."""
+    slug: str
+    name: str
+    role_count: int
+    roles: list[str]
+
+
+class CategoriesResponse(BaseModel):
+    """Response for GET /api/v1/categories."""
+    total: int
+    categories: list[CategoryInfo]
+
+
+class DuplicateCheckRequest(BaseModel):
+    """Request body for POST /api/v1/jobs/check-duplicates."""
+    urls: list[str] = Field(..., description="Job URLs to test for duplicates")
+
+
+class DuplicateCheckResponse(BaseModel):
+    """Response for POST /api/v1/jobs/check-duplicates."""
+    total_checked: int
+    duplicates: list[str]
+    new: list[str]
+
+
+class MarkProcessedRequest(BaseModel):
+    """Request body for PATCH /api/v1/jobs/mark-processed."""
+    urls: list[str] = Field(..., description="Job URLs to mark as processed")
+
+
+class MarkProcessedResponse(BaseModel):
+    """Response for PATCH /api/v1/jobs/mark-processed."""
+    marked: int
+    total_processed: int
+    message: str
+
+
+class UnprocessedJobsResponse(BaseModel):
+    """Response for GET /api/v1/jobs/unprocessed."""
+    category_slug: str
+    category_name: str
+    location: str = SCRAPE_LOCATION
+    total_scraped: int
+    total_unprocessed: int
+    jobs: list[JobListing]
