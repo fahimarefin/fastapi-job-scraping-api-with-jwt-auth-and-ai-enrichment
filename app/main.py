@@ -27,6 +27,7 @@ app = FastAPI(
 ALLOWED_ORIGINS = [
     "http://localhost:5173",          # Vite dev dashboard
     "http://127.0.0.1:5173",
+    "http://10.0.80.79:5173",      # Vite dev dashboard (local network)
     "http://206.162.244.135:8000",    # FastAPI itself (self-reference, harmless)
     "https://n8n.srv1795032.hstgr.cloud",  # n8n webhook host
 ]
