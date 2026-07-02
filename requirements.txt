@@ -11,3 +11,4 @@ python-dotenv==1.0.1
 # JobSpy — scrapes Indeed, LinkedIn, Glassdoor, ZipRecruiter
 python-jobspy==1.1.80
 pandas>=2.0.0
+httpx

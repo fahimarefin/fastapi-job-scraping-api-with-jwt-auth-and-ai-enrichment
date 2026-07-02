@@ -3,6 +3,7 @@ import asyncio
 import logging
 from collections import defaultdict
 
+import httpx
 from fastapi import APIRouter, HTTPException, Query
 
 from app.models.schemas import (
@@ -28,6 +29,9 @@ from app.scrapers.jobspy_scraper import JobSpyScraper
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])
 categories_router = APIRouter(prefix="/api/v1", tags=["categories"])
+trigger_router = APIRouter(prefix="/api/v1", tags=["trigger"])
+
+N8N_WEBHOOK = "https://n8n.srv1795032.hstgr.cloud/webhook/recruitment/scrape"
 
 # ---------------------------------------------------------------------------
 # In-memory processed-URL store
@@ -163,8 +167,8 @@ async def scrape_all() -> ScrapeAllResponse:
                     industry=industry,
                     location=result.location,
                     total=result.total,
-                    jobs=result.jobs,
-                    errors=result.errors,
+                    jobs=list(result.jobs),
+                    errors=dict(result.errors),
                 )
             )
 
@@ -350,3 +354,37 @@ async def get_unprocessed_jobs(
         total_unprocessed=len(unprocessed_jobs),
         jobs=unprocessed_jobs,
     )
+
+
+# ---------------------------------------------------------------------------
+# GET /api/v1/trigger/{category}
+# ---------------------------------------------------------------------------
+
+@trigger_router.get(
+    "/trigger/{category}",
+    summary="Trigger the n8n recruitment scrape webhook",
+    description=(
+        "Forwards a GET request to the n8n webhook for the given category, "
+        "used to kick off the external n8n scraping workflow."
+    ),
+)
+async def trigger_workflow(category: str):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                N8N_WEBHOOK,
+                params={"category": category},
+                timeout=30.0,
+            )
+    except httpx.RequestError as exc:
+        logger.exception("Failed to reach n8n webhook for category '%s'", category)
+        raise HTTPException(
+            status_code=502,
+            detail=f"Could not reach n8n webhook: {exc}",
+        )
+
+    return {
+        "status": "triggered",
+        "category": category,
+        "n8n_status": response.status_code,
+    }

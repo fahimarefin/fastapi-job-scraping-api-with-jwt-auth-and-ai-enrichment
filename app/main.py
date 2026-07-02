@@ -25,12 +25,14 @@ app = FastAPI(
 
 # Explicit allowed origins — dashboard (dev + prod) and n8n webhook host
 ALLOWED_ORIGINS = [
-    "http://localhost:5173",          # Vite dev dashboard
+    "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://10.0.80.79:5173",      # Vite dev dashboard (local network)
-    "http://206.162.244.135:8000",    # FastAPI itself (self-reference, harmless)
-    "https://n8n.srv1795032.hstgr.cloud",  # n8n webhook host
+    "http://10.0.80.79:5173",
+    "http://206.162.244.135:5173",     # Add your VPS frontend origin here
+    "http://206.162.244.135:8000",
+    "https://n8n.srv1795032.hstgr.cloud",
 ]
+
 
 app.add_middleware(
     CORSMiddleware,
