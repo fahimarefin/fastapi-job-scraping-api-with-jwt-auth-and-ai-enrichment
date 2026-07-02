@@ -2,9 +2,10 @@
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import router as jobs_router, categories_router
+from app.api.routes import router as jobs_router, categories_router, trigger_router
 from app.core.config import get_settings
 from app.models.schemas import HealthResponse
+
 
 settings = get_settings()
 
@@ -44,6 +45,7 @@ app.add_middleware(
 
 app.include_router(jobs_router)
 app.include_router(categories_router)
+app.include_router(trigger_router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["meta"])
