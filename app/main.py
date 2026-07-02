@@ -1,4 +1,4 @@
-#app/main.py
+# app/main.py
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,10 +23,19 @@ app = FastAPI(
     ),
 )
 
+# Explicit allowed origins — dashboard (dev + prod) and n8n webhook host
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",          # Vite dev dashboard
+    "http://127.0.0.1:5173",
+    "http://206.162.244.135:8000",    # FastAPI itself (self-reference, harmless)
+    "https://n8n.srv1795032.hstgr.cloud",  # n8n webhook host
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
