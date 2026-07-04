@@ -31,7 +31,7 @@ router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])
 categories_router = APIRouter(prefix="/api/v1", tags=["categories"])
 trigger_router = APIRouter(prefix="/api/v1", tags=["trigger"])
 
-N8N_WEBHOOK = "https://n8n.srv1795032.hstgr.cloud/webhook/recruitment/scrape"
+N8N_WEBHOOK = "https://n8n.srv1795032.hstgr.cloud/webhook-test/recruitment/scrape"
 
 # ---------------------------------------------------------------------------
 # In-memory processed-URL store
@@ -43,10 +43,6 @@ _processed_urls: set[str] = set()
 _jobspy = JobSpyScraper(sites=["indeed", "linkedin", "glassdoor", "zip_recruiter"])
 _career_page_scraper = CareerPageScraper()
 
-
-# ---------------------------------------------------------------------------
-# Internal helper — scrape a single role across all sources CONCURRENTLY
-# ---------------------------------------------------------------------------
 
 async def _scrape_role(role: str, industry: str) -> RoleResult:
     """
