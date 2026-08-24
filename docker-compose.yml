@@ -13,3 +13,9 @@ services:
     volumes:
       - ./app/core/career_pages.json:/app/app/core/career_pages.json
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jobscraper-n8n.rule=Host(`n8n.rebekhoffman-staffing.com`)"
+      - "traefik.http.routers.jobscraper-n8n.entrypoints=websecure"
+      - "traefik.http.routers.jobscraper-n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.services.jobscraper-n8n.loadbalancer.server.port=8000"
