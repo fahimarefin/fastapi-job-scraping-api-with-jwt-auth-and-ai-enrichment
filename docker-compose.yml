@@ -2,8 +2,8 @@ services:
   job-scraper-api:
     build: .
     container_name: job-scraper-api
-    ports:
-      - "8000:8000"
+    # ports:
+    #   - "8000:8000"        # no longer needed — Traefik routes to it internally
     environment:
       - DEBUG=false
       - REQUEST_TIMEOUT=15
@@ -13,3 +13,9 @@ services:
     volumes:
       - ./app/core/career_pages.json:/app/app/core/career_pages.json
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jobscraper.rule=Host(`api.rebekhoffman-staffing.com`)"
+      - "traefik.http.routers.jobscraper.entrypoints=websecure"
+      - "traefik.http.routers.jobscraper.tls.certresolver=letsencrypt"
+      - "traefik.http.services.jobscraper.loadbalancer.server.port=8000"
