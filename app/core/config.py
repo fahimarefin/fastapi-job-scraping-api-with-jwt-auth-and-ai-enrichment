@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     career_pages_config_path: str = "app/core/career_pages.json"
     min_request_interval: float = 0.2
 
+    # Candidate scraping — delay between LinkedIn profile requests (seconds)
+    candidate_scrape_delay: float = 2.0
+
 
 @lru_cache
 def get_settings() -> Settings:

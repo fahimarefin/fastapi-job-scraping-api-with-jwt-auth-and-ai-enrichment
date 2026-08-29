@@ -12,3 +12,5 @@ python-dotenv==1.0.1
 python-jobspy==1.1.80
 pandas>=2.0.0
 httpx
+# DDG search — candidate profile discovery
+ddgs>=9.0.0

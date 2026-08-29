@@ -259,3 +259,70 @@ class UnprocessedJobsResponse(BaseModel):
     total_scraped: int
     total_unprocessed: int
     jobs: list[JobListing]
+
+
+# ---------------------------------------------------------------------------
+# Candidate scraping models
+# ---------------------------------------------------------------------------
+
+class CandidateExperience(BaseModel):
+    """A single work experience entry on a candidate profile."""
+    title: Optional[str] = None
+    company: Optional[str] = None
+    location: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    description: Optional[str] = None
+
+
+class CandidateEducation(BaseModel):
+    """A single education entry on a candidate profile."""
+    school: Optional[str] = None
+    degree: Optional[str] = None
+    field_of_study: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+
+
+class CandidateProfile(BaseModel):
+    """Structured candidate data scraped from LinkedIn."""
+    full_name: Optional[str] = None
+    headline: Optional[str] = None
+    location: Optional[str] = None
+    summary: Optional[str] = None
+    profile_url: Optional[str] = None
+    profile_image_url: Optional[str] = None
+    current_company: Optional[str] = None
+    current_title: Optional[str] = None
+    skills: list[str] = Field(default_factory=list)
+    experience: list[CandidateExperience] = Field(default_factory=list)
+    education: list[CandidateEducation] = Field(default_factory=list)
+    connections_count: Optional[int] = None
+    scraped_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class CandidateSearchRequest(BaseModel):
+    """Request body for POST /api/v1/candidates/search."""
+    keyword: str = Field(..., description="Search keyword (e.g. 'Python Developer')")
+    job_title: Optional[str] = Field(None, description="Filter by current job title")
+    location: Optional[str] = Field(None, description="Filter by location (e.g. 'San Francisco')")
+    limit: int = Field(default=10, ge=1, le=50, description="Max candidates to return")
+
+
+class CandidateSearchResponse(BaseModel):
+    """Response for POST /api/v1/candidates/search."""
+    keyword: str
+    total: int
+    candidates: list[CandidateProfile]
+
+
+class CandidateProfileRequest(BaseModel):
+    """Request body for POST /api/v1/candidates/profile."""
+    linkedin_url: str = Field(..., description="Full LinkedIn profile URL")
+
+
+class CandidateProfileResponse(BaseModel):
+    """Response for POST /api/v1/candidates/profile."""
+    linkedin_url: str
+    profile: Optional[CandidateProfile] = None
+    error: Optional[str] = None

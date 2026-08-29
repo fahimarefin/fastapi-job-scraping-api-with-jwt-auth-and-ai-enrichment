@@ -3,6 +3,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router as jobs_router, categories_router, trigger_router
+from app.api.candidate_routes import candidates_router
 from app.core.config import get_settings
 from app.models.schemas import HealthResponse
 
@@ -20,7 +21,9 @@ app = FastAPI(
     description=(
         "Automatically scrapes job postings across 10 industries and 60+ hardcoded roles. "
         "No parameters required — location is fixed to USA and limit is 20 results per role. "
-        "Aggregates data from Indeed, LinkedIn, Glassdoor, ZipRecruiter, and custom career pages."
+        "Aggregates data from Indeed, LinkedIn, Glassdoor, ZipRecruiter, and custom career pages.\n\n"
+        "Also supports **candidate profile scraping** from LinkedIn via the Bright Data API — "
+        "search by keyword/title or fetch individual profiles."
     ),
 )
 
@@ -47,6 +50,7 @@ app.add_middleware(
 app.include_router(jobs_router)
 app.include_router(categories_router)
 app.include_router(trigger_router)
+app.include_router(candidates_router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["meta"])
