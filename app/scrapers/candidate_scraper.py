@@ -464,14 +464,7 @@ class LinkedInCandidateScraper:
         location: str | None = None,
         limit: int = 10,
     ) -> list[CandidateProfile]:
-        """
-        Search for candidates by keyword using DuckDuckGo.
 
-        Builds a search query targeting LinkedIn profile pages,
-        parses the results for candidate data from snippets,
-        and optionally enriches with direct profile page data.
-        """
-        # Build search query — this pattern yields the most profile results
         parts = [f'site:linkedin.com/in'] 
         parts.append(keyword)
         if job_title and job_title != keyword:
