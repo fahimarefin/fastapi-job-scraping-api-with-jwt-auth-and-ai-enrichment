@@ -1,16 +1,5 @@
 #app/scrapers/career_pages.py
-"""
-Career page scraper with in-process caching.
 
-Key design: career pages load ALL their jobs in one page fetch — there's no
-server-side search.  Filtering is done client-side by title/location.
-
-With ~75+ roles being queried per scrape-all run, fetching the same 5 URLs
-75+ times would add ~75 × 5 × 0.2 s = 75 s of wasted HTTP wait.
-
-Solution: cache the parsed full listing for each URL for `CACHE_TTL` seconds.
-All 75 role queries share the same 5 cached page fetches.
-"""
 import asyncio
 import json
 import logging
