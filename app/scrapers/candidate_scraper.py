@@ -383,6 +383,11 @@ class LinkedInCandidateScraper:
     # ----- DuckDuckGo search -----
 
     def _search_ddg(self, query: str, max_results: int = 20) -> list[dict]:
+        """
+        Search DuckDuckGo using the ddgs library.
+        Returns list of result dicts with keys: title, href, body.
+        This is synchronous — called via run_in_executor.
+        """
         try:
             with DDGS() as ddgs:
                 results = list(
