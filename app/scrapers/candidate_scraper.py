@@ -59,11 +59,23 @@ def _human_delay(base: float = 1.0) -> float:
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _is_masked(value: Any) -> bool:
+    """True if a field is LinkedIn's logged-out asterisk-blur, not real data."""
+    if not value:
+        return False
+    s = str(value)
+    letters = sum(c.isalnum() for c in s)
+    stars = s.count("*")
+    return stars > 0 and stars >= letters
+
+
 def _safe(value: Any) -> str | None:
     if value is None:
         return None
+    if isinstance(value, list):
+        value = ", ".join(str(v).strip() for v in value if str(v).strip())
     s = str(value).strip()
-    return s if s else None
+    return s if s and not _is_masked(s) else None
 
 
 def _parse_headline_parts(headline: str | None) -> tuple[str | None, str | None]:
@@ -257,16 +269,16 @@ def _parse_linkedin_html(html: str, profile_url: str) -> CandidateProfile:
 
         for org in jsonld.get("alumniOf", []):
             if isinstance(org, dict):
-                education.append(CandidateEducation(
-                    school=_safe(org.get("name")),
-                    degree=_safe(org.get("description")),
-                ))
+                school = _safe(org.get("name"))
+                degree = _safe(org.get("description"))
+                if school or degree:
+                    education.append(CandidateEducation(school=school, degree=degree))
         for work in jsonld.get("worksFor", []):
             if isinstance(work, dict):
-                experience.append(CandidateExperience(
-                    company=_safe(work.get("name")),
-                    title=_safe(work.get("jobTitle")),
-                ))
+                company = _safe(work.get("name"))
+                title = _safe(work.get("jobTitle"))
+                if company or title:
+                    experience.append(CandidateExperience(company=company, title=title))
 
     # --- OG tags fallback ---
     if not full_name:
@@ -276,10 +288,14 @@ def _parse_linkedin_html(html: str, profile_url: str) -> CandidateProfile:
         elif og_title and "LinkedIn" not in og_title:
             full_name = _safe(og_title)
 
-    if not headline:
+    if not summary:
         og_desc = og.get("og:description", "") or og.get("description", "")
         if og_desc:
-            headline = _safe(og_desc.split(".")[0])
+            summary = _safe(og_desc)
+    # (headline is intentionally NOT sourced from og:description — that field is
+    # LinkedIn's bio + "Experience: X · Education: Y · Location: Z · N connections"
+    # template, never an actual headline. Real headline comes from the <title>
+    # tag / top-card selectors below.)
 
     if not profile_image:
         profile_image = _safe(og.get("og:image"))
@@ -373,10 +389,9 @@ class LinkedInCandidateScraper:
                     ddgs.text(
                         query,
                         max_results=max_results,
-                        backend="google,bing,brave",   # drop wikipedia/grokipedia/mojeek noise
+                        backend="google,brave,duckduckgo,yahoo",
                     )
                 )
-            logger.info("Raw DDG hrefs: %s", [r.get("href") for r in results])  # add this — see what's really coming back
             return results
         except Exception as exc:
             logger.error("DuckDuckGo search failed: %s", exc)
