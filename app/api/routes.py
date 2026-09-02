@@ -44,6 +44,10 @@ _jobspy = JobSpyScraper(sites=["indeed", "linkedin", "glassdoor", "zip_recruiter
 _career_page_scraper = CareerPageScraper()
 
 
+# ---------------------------------------------------------------------------
+# Internal helper — scrape a single role across all sources CONCURRENTLY
+# ---------------------------------------------------------------------------
+
 async def _scrape_role(role: str, industry: str) -> RoleResult:
     """
     Run JobSpy and CareerPageScraper for one role at the same time.
