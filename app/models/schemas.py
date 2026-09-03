@@ -167,21 +167,53 @@ class JobSource(str, Enum):
 
 
 # ---------------------------------------------------------------------------
-# API response models — existing
+# API response models — Decision Makers & Companies
+# ---------------------------------------------------------------------------
+
+class DecisionMaker(BaseModel):
+    """An HR lead, executive, or decision-maker at the hiring company."""
+    name: str
+    title: Optional[str] = None
+    role_type: Optional[str] = None  # e.g., "HR / Talent Acquisition", "Hiring Executive", "C-Suite"
+    linkedin_url: Optional[str] = None
+    email: Optional[str] = None
+    email_status: Optional[str] = None  # "found", "predicted", "verified"
+    email_alternatives: list[str] = Field(default_factory=list)
+    company: Optional[str] = None
+    company_domain: Optional[str] = None
+
+
+class CompanyInfo(BaseModel):
+    """Enriched company information behind the job posting."""
+    name: str
+    clean_name: Optional[str] = None
+    domain: Optional[str] = None
+    website_url: Optional[str] = None
+    linkedin_url: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# API response models — Jobs
 # ---------------------------------------------------------------------------
 
 class JobListing(BaseModel):
     """A single job posting returned by the scraper."""
     title: str
     company: Optional[str] = None
+    company_info: Optional[CompanyInfo] = None
     location: Optional[str] = None
     description: Optional[str] = None
     url: Optional[str] = None
     posted_at: Optional[str] = None
+    posted_date: Optional[str] = None
+    days_old: Optional[float] = None
+    is_fresh: Optional[bool] = None
     salary: Optional[str] = None
     job_type: Optional[str] = None
     is_remote: Optional[bool] = None
     source: JobSource
+    decision_maker: Optional[DecisionMaker] = None
+    decision_makers: list[DecisionMaker] = Field(default_factory=list)
     scraped_at: datetime = Field(default_factory=datetime.utcnow)
 
 

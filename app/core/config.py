@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     # Candidate scraping — delay between LinkedIn profile requests (seconds)
     candidate_scrape_delay: float = 2.0
 
+    # Fresh job filtering & decision maker enrichment
+    default_hours_old: int = 48
+    enrich_decision_makers: bool = True
+    max_decision_makers_per_company: int = 2
+    hunter_api_key: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

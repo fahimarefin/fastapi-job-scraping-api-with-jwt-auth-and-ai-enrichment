@@ -394,7 +394,6 @@ class LinkedInCandidateScraper:
                     ddgs.text(
                         query,
                         max_results=max_results,
-                        backend="google,brave,duckduckgo,yahoo",
                     )
                 )
             return results

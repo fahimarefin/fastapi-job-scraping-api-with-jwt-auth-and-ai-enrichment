@@ -24,6 +24,7 @@ from app.models.schemas import (
     UnprocessedJobsResponse,
 )
 from app.scrapers.career_pages import CareerPageScraper
+from app.scrapers.enrichment_service import enricher
 from app.scrapers.jobspy_scraper import JobSpyScraper
 
 logger = logging.getLogger(__name__)
@@ -48,17 +49,21 @@ _career_page_scraper = CareerPageScraper()
 # Internal helper — scrape a single role across all sources CONCURRENTLY
 # ---------------------------------------------------------------------------
 
-async def _scrape_role(role: str, industry: str) -> RoleResult:
+async def _scrape_role(
+    role: str,
+    industry: str,
+    limit: int = SCRAPE_LIMIT,
+    hours_old: int | None = 48,
+) -> RoleResult:
     """
     Run JobSpy and CareerPageScraper for one role at the same time.
-    Previously they ran sequentially; now career-page fetching overlaps
-    with the (slower) JobSpy thread-pool work.
+    Filtered by hours_old (e.g. 48 hours for 1-2 days old fresh jobs).
     """
     errors: dict[str, str] = {}
 
     # Launch both scrapers simultaneously
-    jobspy_task = asyncio.ensure_future(_jobspy.search(role, SCRAPE_LOCATION, SCRAPE_LIMIT))
-    career_task = asyncio.ensure_future(_career_page_scraper.search(role, SCRAPE_LOCATION, SCRAPE_LIMIT))
+    jobspy_task = asyncio.ensure_future(_jobspy.search(role, SCRAPE_LOCATION, limit, hours_old=hours_old))
+    career_task = asyncio.ensure_future(_career_page_scraper.search(role, SCRAPE_LOCATION, limit, hours_old=hours_old))
 
     jobspy_listings: list[JobListing] = []
     career_listings: list[JobListing] = []
@@ -72,13 +77,13 @@ async def _scrape_role(role: str, industry: str) -> RoleResult:
         for site in _jobspy.active_sites:
             errors[site] = str(jobspy_result)
     else:
-        jobspy_listings = jobspy_result[:SCRAPE_LIMIT]  # type: ignore[index]
+        jobspy_listings = jobspy_result[:limit]  # type: ignore[index]
 
     if isinstance(career_result, Exception):
         logger.exception("CareerPage scraper failed for role '%s': %s", role, career_result)
         errors[JobSource.CAREER_PAGE.value] = str(career_result)
     else:
-        career_listings = career_result[:SCRAPE_LIMIT]  # type: ignore[index]
+        career_listings = career_result[:limit]  # type: ignore[index]
 
     jobs = jobspy_listings + career_listings
 
@@ -101,15 +106,19 @@ async def _scrape_role(role: str, industry: str) -> RoleResult:
     response_model=ScrapeAllResponse,
     summary="Scrape all roles (no parameters needed)",
     description=(
-        "Automatically scrapes **20 jobs** per role for **every hardcoded role** "
-        "across all 10 industries.\n\n"
+        "Automatically scrapes fresh jobs (1–2 days old, 20 results per role) for **every hardcoded role** "
+        "across all 10 industries, resolves the hiring company, finds HR and executive "
+        "decision-makers, and retrieves their LinkedIn profiles and business emails.\n\n"
         "- **Location**: USA (fixed)\n"
         "- **Limit**: 20 results per role per source (fixed)\n"
+        "- **Freshness**: 1–2 days old (48 hours)\n"
+        "- **Decision Makers**: HR & Executives with LinkedIn & email automatically enriched\n"
         "- **Roles**: fully hardcoded — no input required\n\n"
         "> ⚠️ This endpoint may take several minutes due to the volume of requests."
     ),
 )
 async def scrape_all() -> ScrapeAllResponse:
+    hours_old = 48  # Fresh, warm jobs — postings 1–2 days old
 
     role_to_industries: dict[str, list[str]] = defaultdict(list)
     for industry, roles in ALL_ROLES_BY_INDUSTRY.items():
@@ -124,19 +133,29 @@ async def scrape_all() -> ScrapeAllResponse:
     )
 
     # Semaphore: cap peak concurrent role tasks
-    MAX_CONCURRENT_ROLES = 30
+    MAX_CONCURRENT_ROLES = 20
     sem = asyncio.Semaphore(MAX_CONCURRENT_ROLES)
 
     async def _scrape_unique_role(role: str) -> RoleResult:
         async with sem:
             # Use the first industry as the canonical one for the scrape call
             primary_industry = role_to_industries[role][0]
-            return await _scrape_role(role, primary_industry)
+            return await _scrape_role(role, primary_industry, limit=SCRAPE_LIMIT, hours_old=hours_old)
 
     # Fire all unique roles concurrently
     all_results: list[RoleResult] = await asyncio.gather(
         *[_scrape_unique_role(role) for role in unique_roles]
     )
+
+    # Collect all scraped listings across all roles
+    all_listings: list[JobListing] = []
+    for r in all_results:
+        all_listings.extend(r.jobs)
+
+    # Automatically enrich companies & decision-makers with LinkedIn and email
+    if all_listings:
+        logger.info("Enriching %d listings with decision-maker contacts...", len(all_listings))
+        await enricher.enrich_listings(all_listings, max_contacts=2)
 
     # Map each result to ALL industries that include this role
     industries_result: dict[str, list[RoleResult]] = defaultdict(list)
@@ -170,6 +189,8 @@ async def scrape_all() -> ScrapeAllResponse:
         total_jobs_found=total_jobs,
         industries=dict(industries_result),
     )
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -267,10 +288,11 @@ async def mark_processed(body: MarkProcessedRequest) -> MarkProcessedResponse:
     response_model=UnprocessedJobsResponse,
     summary="Scrape unprocessed jobs for a category",
     description=(
-        "Scrapes all roles in the given category and returns only jobs whose "
-        "URL has **not** been marked as processed yet.\n\n"
+        "Scrapes all roles in the given category and returns only fresh jobs whose "
+        "URL has **not** been marked as processed yet, enriched with decision-maker contacts.\n\n"
         "- Use `GET /api/v1/categories` to discover valid `category` slugs.\n"
-        "- Location is fixed to USA; limit is 20 results per role per source.\n"
+        "- **hours_old**: Max job age in hours (default: 48, for 1–2 days old fresh jobs)\n"
+        "- **enrich_contacts**: Enrich company with HR/Executive contacts, LinkedIn and email (default: True)\n"
         "- After consuming the results, call `PATCH /api/v1/jobs/mark-processed` "
         "to exclude them from future responses."
     ),
@@ -282,6 +304,7 @@ async def get_unprocessed_jobs(
         examples=["IT", "healthcare", "finance"],
     ),
 ) -> UnprocessedJobsResponse:
+    hours_old = 48
     # --- Resolve slug → industry name ---
     industry_name = CATEGORY_SLUG_MAP.get(category)
     if not industry_name:
@@ -308,7 +331,7 @@ async def get_unprocessed_jobs(
 
     async def _scrape_with_sem(role: str) -> RoleResult:
         async with sem:
-            return await _scrape_role(role, industry_name)
+            return await _scrape_role(role, industry_name, hours_old=hours_old)
 
     role_results: list[RoleResult] = await asyncio.gather(
         *[_scrape_with_sem(role) for role in roles]
@@ -326,6 +349,11 @@ async def get_unprocessed_jobs(
         job for job in all_jobs
         if not job.url or job.url not in _processed_urls
     ]
+
+    # --- Enrich unprocessed jobs with company decision-makers ---
+    if unprocessed_jobs:
+        logger.info("Enriching %d unprocessed listings with decision-makers...", len(unprocessed_jobs))
+        await enricher.enrich_listings(unprocessed_jobs)
 
     logger.info(
         "unprocessed[%s]: %d scraped, %d unprocessed (%d filtered)",

@@ -34,14 +34,5 @@
     "location_selector": "span.sort-by-location",
     "link_selector": "a.posting-btn-submit",
     "link_attr": "href"
-  },
-  {
-    "company": "Stability AI",
-    "url": "https://jobs.lever.co/stability-ai",
-    "list_selector": "div.posting",
-    "title_selector": "h5",
-    "location_selector": "span.sort-by-location",
-    "link_selector": "a.posting-btn-submit",
-    "link_attr": "href"
   }
 ]

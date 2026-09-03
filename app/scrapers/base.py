@@ -7,5 +7,11 @@ class BaseScraper(ABC):
     source_name: str
 
     @abstractmethod
-    async def search(self, query: str, location: str | None, limit: int) -> list[JobListing]:
+    async def search(
+        self,
+        query: str,
+        location: str | None,
+        limit: int,
+        hours_old: int | None = None,
+    ) -> list[JobListing]:
         raise NotImplementedError

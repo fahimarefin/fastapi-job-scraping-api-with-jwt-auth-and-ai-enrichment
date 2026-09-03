@@ -107,7 +107,13 @@ class CareerPageScraper(BaseScraper):
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    async def search(self, query: str, location: str | None, limit: int) -> list[JobListing]:
+    async def search(
+        self,
+        query: str,
+        location: str | None,
+        limit: int,
+        hours_old: int | None = None,
+    ) -> list[JobListing]:
         if not self.configs:
             return []
 
