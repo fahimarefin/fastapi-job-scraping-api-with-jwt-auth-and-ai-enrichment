@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 # ---------------------------------------------------------------------------
 
 SCRAPE_LOCATION: str = "USA"
-SCRAPE_LIMIT: int = 20          # results requested per role per source
+SCRAPE_LIMIT: int = 10          # results requested per role per source (~800 jobs total)
 
 
 # ---------------------------------------------------------------------------

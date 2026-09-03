@@ -106,15 +106,15 @@ async def _scrape_role(
     response_model=ScrapeAllResponse,
     summary="Scrape all roles (no parameters needed)",
     description=(
-        "Automatically scrapes fresh jobs (1–2 days old, 20 results per role) for **every hardcoded role** "
+        "Automatically scrapes fresh jobs (1–2 days old, 10 results per role, ~800 total) for **every hardcoded role** "
         "across all 10 industries, resolves the hiring company, finds HR and executive "
         "decision-makers, and retrieves their LinkedIn profiles and business emails.\n\n"
         "- **Location**: USA (fixed)\n"
-        "- **Limit**: 20 results per role per source (fixed)\n"
+        "- **Limit**: 10 results per role per source (fixed, ~800 total)\n"
         "- **Freshness**: 1–2 days old (48 hours)\n"
         "- **Decision Makers**: HR & Executives with LinkedIn & email automatically enriched\n"
         "- **Roles**: fully hardcoded — no input required\n\n"
-        "> ⚠️ This endpoint may take several minutes due to the volume of requests."
+        "> ⚠️ This endpoint takes ~1-2 minutes due to scraping across 10 industries."
     ),
 )
 async def scrape_all() -> ScrapeAllResponse:
