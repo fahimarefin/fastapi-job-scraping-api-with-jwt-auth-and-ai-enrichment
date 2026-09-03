@@ -110,18 +110,7 @@ async def _scrape_role(role: str, industry: str) -> RoleResult:
     ),
 )
 async def scrape_all() -> ScrapeAllResponse:
-    """
-    Scrapes every predefined role across all job boards.
 
-    Optimisations:
-    - Roles are deduplicated: a role shared by N industries is scraped once
-      and the result is copied to all N industries.
-    - JobSpy + career pages run concurrently per role.
-    - A semaphore limits peak concurrent role tasks to avoid flooding boards.
-    - Career page HTML is cached (5 min TTL) so the same URL is only fetched
-      once per scrape-all run regardless of how many roles query it.
-    """
-    # Build unique-role → [industries] mapping
     role_to_industries: dict[str, list[str]] = defaultdict(list)
     for industry, roles in ALL_ROLES_BY_INDUSTRY.items():
         for role in roles:

@@ -19,11 +19,6 @@ app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     description=(
-        "Automatically scrapes job postings across 10 industries and 60+ hardcoded roles. "
-        "No parameters required — location is fixed to USA and limit is 20 results per role. "
-        "Aggregates data from Indeed, LinkedIn, Glassdoor, ZipRecruiter, and custom career pages.\n\n"
-        "Also supports **candidate profile scraping** from LinkedIn via the Bright Data API — "
-        "search by keyword/title or fetch individual profiles."
     ),
 )
 
