@@ -94,6 +94,11 @@ async def _scrape_role(
         errors=errors,
     )
 
+
+# ---------------------------------------------------------------------------
+# GET /api/v1/jobs/scrape-all
+# ---------------------------------------------------------------------------
+
 @router.get(
     "/scrape-all",
     response_model=ScrapeAllResponse,
