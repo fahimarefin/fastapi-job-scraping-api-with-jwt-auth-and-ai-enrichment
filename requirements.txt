@@ -14,3 +14,11 @@ pandas>=2.0.0
 httpx
 # DDG search — candidate profile discovery
 ddgs>=9.0.0
+
+# Database & Authentication
+motor>=3.6.0
+pymongo>=4.9.0
+pyjwt>=2.9.0
+bcrypt>=4.0.1
+email-validator>=2.0.0
+python-multipart>=0.0.12

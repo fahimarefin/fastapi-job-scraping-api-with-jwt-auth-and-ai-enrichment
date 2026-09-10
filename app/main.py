@@ -1,10 +1,12 @@
-# app/main.py
+from contextlib import asynccontextmanager
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router as jobs_router, categories_router, trigger_router
 from app.api.candidate_routes import candidates_router
+from app.api.auth_routes import auth_router
 from app.core.config import get_settings
+from app.core.database import connect_to_mongo, close_mongo_connection
 from app.models.schemas import HealthResponse
 
 
@@ -15,12 +17,28 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
 )
 
+logger = logging.getLogger(__name__)
+
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    logger.info("Starting %s v%s...", settings.app_name, settings.app_version)
+    await connect_to_mongo()
+    yield
+    # Shutdown
+    logger.info("Shutting down %s...", settings.app_name)
+    await close_mongo_connection()
+
+
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description=(
-    ),
+    description="Job Scraper & Candidate Discovery API with MongoDB JWT Authentication",
+    lifespan=lifespan,
 )
+
 
 # Explicit allowed origins — dashboard (dev + prod) and n8n webhook host
 ALLOWED_ORIGINS = [
@@ -42,6 +60,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(jobs_router)
 app.include_router(categories_router)
 app.include_router(trigger_router)

@@ -30,6 +30,18 @@ class Settings(BaseSettings):
     max_decision_makers_per_company: int = 2
     hunter_api_key: str | None = None
 
+    # MongoDB Database settings
+    mongodb_url: str = (
+        "mongodb://rebekhoffman:xK9mP2vQ8nR5tL1wZ7yB4cF6hJ3sD0aE@127.0.0.1:27017/myappdb?authSource=admin"
+    )
+    mongodb_db_name: str = "myappdb"
+
+    # JWT Authentication settings
+    jwt_secret_key: str = "xK9mP2vQ8nR5tL1wZ7yB4cF6hJ3sD0aE"
+    jwt_algorithm: str = "HS256"
+    jwt_access_token_expire_minutes: int = 1440  # 24 hours
+
+
 
 @lru_cache
 def get_settings() -> Settings:
