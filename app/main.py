@@ -46,11 +46,12 @@ ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://10.0.80.79:5173",
-    "http://206.162.244.135:5173",     # Add your VPS frontend origin here
+    "http://206.162.244.135:5173",
     "http://206.162.244.135:8000",
     "https://n8n.srv1795032.hstgr.cloud",
     "http://206.162.244.135:3001",
-    "https://n8n.rebekhoffman-staffing.com",   # added: your CDN/proxy domain
+    "https://n8n.rebekhoffman-staffing.com",
+    "https://automation.rebekhoffman-staffing.com",   # n8n editor domain
 ]
 
 app.add_middleware(
