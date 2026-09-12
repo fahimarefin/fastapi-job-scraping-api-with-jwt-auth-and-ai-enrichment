@@ -49,9 +49,9 @@ ALLOWED_ORIGINS = [
     "http://206.162.244.135:5173",     # Add your VPS frontend origin here
     "http://206.162.244.135:8000",
     "https://n8n.srv1795032.hstgr.cloud",
-    "http://206.162.244.135:3001"
+    "http://206.162.244.135:3001",
+    "https://n8n.rebekhoffman-staffing.com",   # added: your CDN/proxy domain
 ]
-
 
 app.add_middleware(
     CORSMiddleware,
