@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router as jobs_router, categories_router, trigger_router
 from app.api.candidate_routes import candidates_router
 from app.api.auth_routes import auth_router
+from app.api.deps import get_current_user
 from app.core.config import get_settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 from app.models.schemas import HealthResponse
@@ -60,11 +61,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Authentication endpoints (register, login, token) remain public
 app.include_router(auth_router)
-app.include_router(jobs_router)
-app.include_router(categories_router)
-app.include_router(trigger_router)
-app.include_router(candidates_router)
+
+# Protect all functional endpoints with JWT authentication
+app.include_router(jobs_router, dependencies=[Depends(get_current_user)])
+app.include_router(categories_router, dependencies=[Depends(get_current_user)])
+app.include_router(trigger_router, dependencies=[Depends(get_current_user)])
+app.include_router(candidates_router, dependencies=[Depends(get_current_user)])
 
 
 @app.get("/health", response_model=HealthResponse, tags=["meta"])
