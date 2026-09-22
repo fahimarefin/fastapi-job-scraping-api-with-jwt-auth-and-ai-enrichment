@@ -105,7 +105,11 @@ async def login(body: UserLoginRequest) -> TokenResponse:
     settings = get_settings()
     user_id_str = str(user["_id"])
     token = create_access_token(data={"sub": user_id_str, "username": user["username"], "email": user["email"]})
-    expires_in_seconds = settings.jwt_access_token_expire_minutes * 60
+    expires_in_seconds = (
+        settings.jwt_access_token_expire_minutes * 60
+        if settings.jwt_access_token_expire_minutes and settings.jwt_access_token_expire_minutes > 0
+        else None
+    )
 
     user_response = UserResponse(
         id=user_id_str,
@@ -157,11 +161,14 @@ async def login_oauth2_form(form_data: OAuth2PasswordRequestForm = Depends()) ->
     user_id_str = str(user["_id"])
     token = create_access_token(data={"sub": user_id_str, "username": user["username"], "email": user["email"]})
 
-    return {
+    response_data: dict[str, Any] = {
         "access_token": token,
         "token_type": "bearer",
-        "expires_in": settings.jwt_access_token_expire_minutes * 60,
     }
+    if settings.jwt_access_token_expire_minutes and settings.jwt_access_token_expire_minutes > 0:
+        response_data["expires_in"] = settings.jwt_access_token_expire_minutes * 60
+
+    return response_data
 
 
 @auth_router.get(

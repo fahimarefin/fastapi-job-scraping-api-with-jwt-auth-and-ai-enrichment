@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     # JWT Authentication settings
     jwt_secret_key: str = "xK9mP2vQ8nR5tL1wZ7yB4cF6hJ3sD0aE"
     jwt_algorithm: str = "HS256"
-    jwt_access_token_expire_minutes: int = 1440  # 24 hours
+    jwt_access_token_expire_minutes: int | None = 0  # 0 or None means tokens never expire
 
 
 
