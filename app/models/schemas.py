@@ -14,7 +14,7 @@ SCRAPE_LIMIT: int = 10          # results requested per role per source (~800 jo
 
 
 # ---------------------------------------------------------------------------
-# Hardcoded role catalogue — 8 industries, all roles pre-defined
+# Hardcoded role catalogue — 11 industries, all roles pre-defined
 # ---------------------------------------------------------------------------
 
 ALL_ROLES_BY_INDUSTRY: dict[str, list[str]] = {
@@ -75,17 +75,30 @@ ALL_ROLES_BY_INDUSTRY: dict[str, list[str]] = {
         "Director",
         "Senior Executive",
     ],
-    "Business Administration": [
-        "Office Manager",
-        "Administrative Assistant",
-        "Executive Assistant",
+    "Customer Success Representative": [
+        "Customer Success Representative",
+        "Customer Success Specialist",
+        "Customer Success Manager",
+        "Client Success Specialist",
+    ],
+    "Clerical & Front Desk": [
         "Receptionist",
-        "Front Office Administrator",
-        "Back Office Administrator",
-        "Office Coordinator",
-        "Mailroom Personnel",
         "Clerical Staff",
         "Data Entry Personnel",
+        "Back Office Administrator",
+        "Front Desk Coordinator",
+    ],
+    "Office Managers": [
+        "Office Manager",
+        "Office Coordinator",
+        "Administrative Assistant",
+        "Executive Assistant",
+    ],
+    "Mailroom Support": [
+        "Mailroom Personnel",
+        "Mailroom Clerk",
+        "Mailroom Coordinator",
+        "Mailroom Assistant",
     ],
     "Legal Support": [
         "Legal Secretary",
@@ -101,7 +114,7 @@ ALL_ROLES_BY_INDUSTRY: dict[str, list[str]] = {
         "Clerical Staff",
         "Data Entry Personnel",
     ],
-    "Customer Service & Front Office": [
+    "Customer Service": [
         "Customer Service Representative",
         "Front Office Administrator",
         "Front Desk Receptionist",
@@ -124,14 +137,17 @@ ALL_ROLES: list[str] = list(dict.fromkeys(
 # ---------------------------------------------------------------------------
 
 CATEGORY_SLUG_MAP: dict[str, str] = {
-    "IT":               "Information Technology",
-    "healthcare":       "Medical & Healthcare",
-    "finance":          "Accounting & Finance",
-    "executive":        "Executive / C-Suite",
-    "business":         "Business Administration",
-    "legal":            "Legal Support",
-    "admin":            "Administrative & Office Support",
-    "customer-service": "Customer Service & Front Office",
+    "IT":                  "Information Technology",
+    "healthcare":          "Medical & Healthcare",
+    "finance":             "Accounting & Finance",
+    "executive":           "Executive / C-Suite",
+    "customer-success":    "Customer Success Representative",
+    "clerical-front-desk": "Clerical & Front Desk",
+    "office-managers":     "Office Managers",
+    "mailroom-support":    "Mailroom Support",
+    "legal":               "Legal Support",
+    "admin":               "Administrative & Office Support",
+    "customer-service":    "Customer Service",
 }
 
 
