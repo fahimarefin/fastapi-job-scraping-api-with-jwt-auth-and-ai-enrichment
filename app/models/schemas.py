@@ -14,7 +14,7 @@ SCRAPE_LIMIT: int = 10          # results requested per role per source (~800 jo
 
 
 # ---------------------------------------------------------------------------
-# Hardcoded role catalogue — 10 industries, all roles pre-defined
+# Hardcoded role catalogue — 8 industries, all roles pre-defined
 # ---------------------------------------------------------------------------
 
 ALL_ROLES_BY_INDUSTRY: dict[str, list[str]] = {
@@ -108,20 +108,6 @@ ALL_ROLES_BY_INDUSTRY: dict[str, list[str]] = {
         "Call Center Agent",
         "Client Support Specialist",
     ],
-    "Government (Public Sector)": [
-        "Government Administrator",
-        "Public Sector Manager",
-        "Policy Analyst",
-        "Government IT Specialist",
-        "Public Health Officer",
-    ],
-    "Commercial (Private Sector)": [
-        "Sales Manager",
-        "Business Development Manager",
-        "Account Executive",
-        "Commercial Director",
-        "Regional Manager",
-    ],
 }
 
 # Flat deduplicated list of every role across all industries
@@ -146,8 +132,6 @@ CATEGORY_SLUG_MAP: dict[str, str] = {
     "legal":            "Legal Support",
     "admin":            "Administrative & Office Support",
     "customer-service": "Customer Service & Front Office",
-    "government":       "Government (Public Sector)",
-    "commercial":       "Commercial (Private Sector)",
 }
 
 
