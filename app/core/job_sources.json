@@ -1,0 +1,518 @@
+[
+  {
+    "id": "indeed",
+    "name": "Indeed",
+    "url": "https://www.indeed.com",
+    "adapter": "jobspy"
+  },
+  {
+    "id": "linkedin",
+    "name": "LinkedIn Jobs",
+    "url": "https://www.linkedin.com/jobs",
+    "adapter": "jobspy"
+  },
+  {
+    "id": "zip_recruiter",
+    "name": "ZipRecruiter",
+    "url": "https://www.ziprecruiter.com",
+    "adapter": "jobspy"
+  },
+  {
+    "id": "glassdoor",
+    "name": "Glassdoor",
+    "url": "https://www.glassdoor.com/Job",
+    "adapter": "jobspy"
+  },
+  {
+    "id": "dice",
+    "name": "Dice",
+    "url": "https://www.dice.com",
+    "adapter": "dice_mcp",
+    "feed_url": "https://mcp.dice.com/mcp",
+    "allowed_hosts": [
+      "mcp.dice.com"
+    ]
+  },
+  {
+    "id": "wellfound",
+    "name": "Wellfound",
+    "url": "https://wellfound.com",
+    "adapter": "pages",
+    "search_urls": [
+      "https://wellfound.com/jobs"
+    ],
+    "link_selector": "a[href]",
+    "job_pattern": "/jobs/\\d+",
+    "allowed_hosts": [
+      "wellfound.com"
+    ]
+  },
+  {
+    "id": "builtin",
+    "name": "Built In",
+    "url": "https://builtin.com",
+    "adapter": "pages",
+    "search_urls": [
+      "https://builtin.com/jobs"
+    ],
+    "link_selector": "a[href]",
+    "job_pattern": "/job/",
+    "allowed_hosts": [
+      "builtin.com"
+    ]
+  },
+  {
+    "id": "adzuna",
+    "name": "Adzuna",
+    "url": "https://www.adzuna.com",
+    "adapter": "api"
+  },
+  {
+    "id": "ladders",
+    "name": "The Ladders",
+    "url": "https://www.theladders.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "usajobs",
+    "name": "USAJobs",
+    "url": "https://www.usajobs.gov",
+    "adapter": "api"
+  },
+  {
+    "id": "idealist",
+    "name": "Idealist",
+    "url": "https://www.idealist.org",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "higheredjobs",
+    "name": "HigherEdJobs",
+    "url": "https://www.higheredjobs.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "diversityjobs",
+    "name": "DiversityJobs",
+    "url": "https://www.diversityjobs.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "constructionjobs",
+    "name": "ConstructionJobs",
+    "url": "https://www.constructionjobs.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "efinancialcareers",
+    "name": "eFinancialCareers",
+    "url": "https://www.efinancialcareers.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "cybersecjobs",
+    "name": "CyberSecJobs",
+    "url": "https://www.cybersecjobs.com",
+    "adapter": "pages",
+    "search_urls": [
+      "https://clearedjobs.net/index.php?action=advanced_search&page=search&keywords=cybersecurity&clearance_check_all=1"
+    ],
+    "link_selector": "a[href]",
+    "job_pattern": "/job/",
+    "allowed_hosts": [
+      "clearedjobs.net"
+    ]
+  },
+  {
+    "id": "ehscareers",
+    "name": "EHS Careers",
+    "url": "https://www.ehscareers.com",
+    "adapter": "pages",
+    "search_urls": [
+      "https://ehscareers.com/jobs"
+    ],
+    "link_selector": "a[href]",
+    "job_pattern": "/job/",
+    "allowed_hosts": [
+      "ehscareers.com"
+    ]
+  },
+  {
+    "id": "handshake",
+    "name": "Handshake",
+    "url": "https://joinhandshake.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "snagajob",
+    "name": "Snagajob",
+    "url": "https://www.snagajob.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "themuse",
+    "name": "The Muse",
+    "url": "https://www.themuse.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "welcome_to_the_jungle",
+    "name": "Welcome to the Jungle",
+    "url": "https://www.welcometothejungle.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "monster",
+    "name": "Monster",
+    "url": "https://www.monster.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "careerbuilder",
+    "name": "CareerBuilder",
+    "url": "https://www.careerbuilder.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "simplyhired",
+    "name": "SimplyHired",
+    "url": "https://www.simplyhired.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "hired",
+    "name": "Hired",
+    "url": "https://hired.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "flexjobs",
+    "name": "FlexJobs",
+    "url": "https://www.flexjobs.com",
+    "adapter": "pages",
+    "search_urls": [
+      "https://www.flexjobs.com/search"
+    ],
+    "link_selector": "a[href]",
+    "job_pattern": "/search\\?|/publicjobs/",
+    "allowed_hosts": [
+      "www.flexjobs.com"
+    ]
+  },
+  {
+    "id": "remote_co",
+    "name": "Remote.co",
+    "url": "https://remote.co",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "weworkremotely",
+    "name": "We Work Remotely",
+    "url": "https://weworkremotely.com",
+    "adapter": "rss",
+    "feed_url": "https://weworkremotely.com/remote-jobs.rss"
+  },
+  {
+    "id": "jobspresso",
+    "name": "Jobspresso",
+    "url": "https://jobspresso.co",
+    "adapter": "pages",
+    "search_urls": [
+      "https://jobspresso.co/remote-work/"
+    ],
+    "link_selector": "a[href]",
+    "job_pattern": "/job/",
+    "allowed_hosts": [
+      "jobspresso.co"
+    ]
+  },
+  {
+    "id": "remoteok",
+    "name": "Remote OK",
+    "url": "https://remoteok.com",
+    "adapter": "remoteok",
+    "feed_url": "https://remoteok.com/api",
+    "allowed_hosts": [
+      "remoteok.com",
+      "remoteOK.com"
+    ]
+  },
+  {
+    "id": "remotive",
+    "name": "Remotive",
+    "url": "https://remotive.com",
+    "adapter": "api",
+    "refresh_interval_seconds": 21600
+  },
+  {
+    "id": "workingnomads",
+    "name": "Working Nomads",
+    "url": "https://www.workingnomads.com",
+    "adapter": "workingnomads",
+    "feed_url": "https://www.workingnomads.com/api/exposed_jobs/"
+  },
+  {
+    "id": "himalayas",
+    "name": "Himalayas",
+    "url": "https://himalayas.app",
+    "adapter": "himalayas",
+    "feed_url": "https://himalayas.app/jobs/api/search",
+    "refresh_interval_seconds": 86400
+  },
+  {
+    "id": "healthecareers",
+    "name": "Health eCareers",
+    "url": "https://www.healthecareers.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "doccafe",
+    "name": "DocCafe",
+    "url": "https://www.doccafe.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "healthcarejobsite",
+    "name": "HealthcareJobsite",
+    "url": "https://www.healthcarejobsite.com",
+    "adapter": "pages",
+    "search_urls": [
+      "https://www.healthcarejobsite.com/jobs/search"
+    ],
+    "link_selector": "a[href]",
+    "job_pattern": "/jobs/[^?]+-job\\.html",
+    "allowed_hosts": [
+      "www.healthcarejobsite.com"
+    ]
+  },
+  {
+    "id": "hospitalcareers",
+    "name": "Hospital Careers",
+    "url": "https://hospitalcareers.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "nyu_langone",
+    "name": "NYU Langone Health",
+    "url": "https://jobs.nyulangone.org",
+    "adapter": "cws",
+    "feed_url": "https://jobsapi-internal.m-cloud.io/api/job",
+    "organization": "1637",
+    "allowed_hosts": [
+      "jobsapi-internal.m-cloud.io"
+    ]
+  },
+  {
+    "id": "mount_sinai",
+    "name": "Mount Sinai Health System",
+    "url": "https://careers.mountsinai.org",
+    "adapter": "jibe",
+    "feed_url": "https://careers.mountsinai.org/api/jobs",
+    "detail_template": "https://careers.mountsinai.org/jobs/{id}"
+  },
+  {
+    "id": "nyc_health_hospitals",
+    "name": "NYC Health + Hospitals",
+    "url": "https://nychealthandhospitals.org/careers",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "cleveland_clinic",
+    "name": "Cleveland Clinic",
+    "url": "https://jobs.clevelandclinic.org",
+    "adapter": "workday",
+    "feed_url": "https://ccf.wd1.myworkdayjobs.com/wday/cxs/ccf/ClevelandClinicCareers",
+    "job_base": "https://ccf.wd1.myworkdayjobs.com/en-US/ClevelandClinicCareers",
+    "allowed_hosts": [
+      "ccf.wd1.myworkdayjobs.com"
+    ]
+  },
+  {
+    "id": "commonspirit",
+    "name": "CommonSpirit Health",
+    "url": "https://commonspirit.careers",
+    "adapter": "pages",
+    "search_urls": [
+      "https://www.commonspirit.careers/search-jobs"
+    ],
+    "link_selector": "a[href]",
+    "job_pattern": "/job/",
+    "allowed_hosts": [
+      "www.commonspirit.careers"
+    ]
+  },
+  {
+    "id": "hca_healthcare",
+    "name": "HCA Healthcare",
+    "url": "https://www.hcahealthcare.com/about/working-at-hca-healthcare",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "northwell",
+    "name": "Northwell Health",
+    "url": "https://jobs.northwell.edu",
+    "adapter": "oracle",
+    "feed_url": "https://eppr.fa.us2.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions",
+    "site": "CX_2",
+    "detail_template": "https://eppr.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_2/job/{id}",
+    "allowed_hosts": [
+      "eppr.fa.us2.oraclecloud.com"
+    ]
+  },
+  {
+    "id": "mayo_clinic",
+    "name": "Mayo Clinic",
+    "url": "https://jobs.mayoclinic.org",
+    "adapter": "pages",
+    "search_urls": [
+      "https://jobs.mayoclinic.org/search-jobs"
+    ],
+    "link_selector": "a[href]",
+    "job_pattern": "/job/",
+    "allowed_hosts": [
+      "jobs.mayoclinic.org"
+    ]
+  },
+  {
+    "id": "kaiser_permanente",
+    "name": "Kaiser Permanente",
+    "url": "https://www.kaiserpermanentejobs.org",
+    "adapter": "pages",
+    "search_urls": [
+      "https://www.kaiserpermanentejobs.org/search-jobs"
+    ],
+    "link_selector": "a[href]",
+    "job_pattern": "/job/",
+    "allowed_hosts": [
+      "www.kaiserpermanentejobs.org"
+    ]
+  },
+  {
+    "id": "ascension",
+    "name": "Ascension",
+    "url": "https://jobs.ascension.org",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "providence",
+    "name": "Providence",
+    "url": "https://www.providence.jobs",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "genesis_healthcare",
+    "name": "Genesis HealthCare",
+    "url": "https://genesishcc.jibeapply.com/genesishcc",
+    "adapter": "jibe",
+    "feed_url": "https://genesishcc.jibeapply.com/api/jobs",
+    "detail_template": "https://genesishcc.jibeapply.com/genesishcc/jobs/{id}"
+  },
+  {
+    "id": "brookdale",
+    "name": "Brookdale Senior Living",
+    "url": "https://www.brookdale.com",
+    "adapter": "oracle",
+    "feed_url": "https://ibmwjb.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions",
+    "site": "CX_1",
+    "detail_template": "https://ibmwjb.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/{id}",
+    "allowed_hosts": [
+      "ibmwjb.fa.ocs.oraclecloud.com"
+    ]
+  },
+  {
+    "id": "life_care_centers",
+    "name": "Life Care Centers of America",
+    "url": "https://www.lcca.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "atria",
+    "name": "Atria Senior Living",
+    "url": "https://www.atriaseniorliving.com",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "sunrise",
+    "name": "Sunrise Senior Living",
+    "url": "https://www.sunriseseniorliving.com",
+    "adapter": "workday",
+    "feed_url": "https://sunriseseniorliving.wd12.myworkdayjobs.com/wday/cxs/sunriseseniorliving/SUNRISE_EXT_CAREERS",
+    "job_base": "https://sunriseseniorliving.wd12.myworkdayjobs.com/en-US/SUNRISE_EXT_CAREERS",
+    "allowed_hosts": [
+      "sunriseseniorliving.wd12.myworkdayjobs.com"
+    ]
+  },
+  {
+    "id": "amazon",
+    "name": "Amazon Jobs",
+    "url": "https://www.amazon.jobs",
+    "adapter": "amazon",
+    "feed_url": "https://www.amazon.jobs/en/search.json"
+  },
+  {
+    "id": "google",
+    "name": "Google Careers",
+    "url": "https://www.google.com/about/careers/applications/",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "microsoft",
+    "name": "Microsoft Careers",
+    "url": "https://careers.microsoft.com",
+    "adapter": "microsoft",
+    "feed_url": "https://apply.careers.microsoft.com/api/pcsx/search",
+    "job_base": "https://apply.careers.microsoft.com",
+    "allowed_hosts": [
+      "apply.careers.microsoft.com"
+    ]
+  },
+  {
+    "id": "salesforce",
+    "name": "Salesforce Careers",
+    "url": "https://www.salesforce.com/company/careers/",
+    "adapter": "jsonld_discovery"
+  },
+  {
+    "id": "hubspot",
+    "name": "HubSpot Careers",
+    "url": "https://www.hubspot.com/careers",
+    "adapter": "greenhouse",
+    "feed_url": "https://boards-api.greenhouse.io/v1/boards/hubspotjobs/jobs",
+    "allowed_hosts": [
+      "boards-api.greenhouse.io"
+    ]
+  },
+  {
+    "id": "zapier",
+    "name": "Zapier Jobs",
+    "url": "https://zapier.com/jobs",
+    "adapter": "ashby",
+    "feed_url": "https://api.ashbyhq.com/posting-api/job-board/zapier",
+    "allowed_hosts": [
+      "api.ashbyhq.com",
+      "jobs.ashbyhq.com"
+    ]
+  },
+  {
+    "id": "gitlab",
+    "name": "GitLab Jobs",
+    "url": "https://about.gitlab.com/jobs/",
+    "adapter": "greenhouse",
+    "feed_url": "https://boards-api.greenhouse.io/v1/boards/gitlab/jobs",
+    "allowed_hosts": [
+      "boards-api.greenhouse.io",
+      "job-boards.greenhouse.io"
+    ]
+  },
+  {
+    "id": "automattic",
+    "name": "Automattic",
+    "url": "https://automattic.com/work-with-us/",
+    "adapter": "greenhouse",
+    "feed_url": "https://boards-api.greenhouse.io/v1/boards/automatticcareers/jobs",
+    "allowed_hosts": [
+      "boards-api.greenhouse.io",
+      "job-boards.greenhouse.io"
+    ]
+  }
+]

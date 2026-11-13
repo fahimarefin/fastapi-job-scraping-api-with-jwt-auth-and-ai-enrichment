@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
+import asyncio
 import logging
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import router as jobs_router, categories_router, trigger_router
+from fastapi.middleware.gzip import GZipMiddleware
+from app.api.routes import router as jobs_router, categories_router, trigger_router, get_job_store
 from app.api.candidate_routes import candidates_router
 from app.api.auth_routes import auth_router
 from app.api.deps import get_current_user
@@ -27,10 +29,15 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting %s v%s...", settings.app_name, settings.app_version)
     await connect_to_mongo()
-    yield
-    # Shutdown
-    logger.info("Shutting down %s...", settings.app_name)
-    await close_mongo_connection()
+    cache_task = asyncio.create_task(get_job_store().run_cache(), name="job-database-cache")
+    try:
+        yield
+    finally:
+        cache_task.cancel()
+        await asyncio.gather(cache_task, return_exceptions=True)
+        get_job_store.cache_clear()
+        logger.info("Shutting down %s...", settings.app_name)
+        await close_mongo_connection()
 
 
 app = FastAPI(
@@ -61,6 +68,8 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+
+app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=1)
 
 # Authentication endpoints (register, login, token) remain public
 app.include_router(auth_router)

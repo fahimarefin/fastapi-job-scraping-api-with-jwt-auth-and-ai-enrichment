@@ -2,7 +2,7 @@
 import asyncio
 import logging
 import time
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 import httpx
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
@@ -53,7 +53,6 @@ def _build_client(extra_headers: dict | None = None) -> httpx.AsyncClient:
         "User-Agent": settings.default_user_agent,
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
         "Connection": "keep-alive",
         "Sec-Fetch-Dest": "document",
         "Sec-Fetch-Mode": "navigate",
@@ -88,10 +87,26 @@ def _is_retryable(exc: BaseException) -> bool:
     retry=retry_if_exception(_is_retryable),
     reraise=True,
 )
-async def fetch(url: str, params: dict | None = None, extra_headers: dict | None = None) -> httpx.Response:
+async def fetch(url: str, params: dict | None = None, extra_headers: dict | None = None, allowed_root: str | None = None) -> httpx.Response:
     await _throttle(url)
     async with _build_client(extra_headers) as client:
-        response = await client.get(url, params=params)
+        if allowed_root:
+            domain = (urlparse(allowed_root).hostname or "").removeprefix("www.")
+            target = url
+            for _ in range(6):
+                parsed = urlparse(target)
+                host = parsed.hostname or ""
+                if parsed.scheme != "https" or parsed.port not in (None, 443) or parsed.username or not (host == domain or host.endswith("." + domain)):
+                    raise ValueError("Source redirect outside configured domain")
+                response = await client.get(target, params=params, follow_redirects=False)
+                if not response.is_redirect:
+                    break
+                target = urljoin(target, response.headers["location"])
+                params = None
+            else:
+                raise ValueError("Too many source redirects")
+        else:
+            response = await client.get(url, params=params)
         if response.status_code == 403:
             logger.warning("403 from %s — likely blocked by bot detection, not a code bug.", url)
         response.raise_for_status()

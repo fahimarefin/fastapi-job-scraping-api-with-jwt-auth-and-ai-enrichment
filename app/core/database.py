@@ -21,6 +21,11 @@ async def connect_to_mongo() -> None:
         db_instance.client = AsyncIOMotorClient(
             settings.mongodb_url,
             serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=3000,
+            socketTimeoutMS=5000,
+            tz_aware=True,
+            compressors="zlib",
+            zlibCompressionLevel=1,
         )
         db_instance.db = db_instance.client[settings.mongodb_db_name]
         
@@ -54,7 +59,11 @@ def get_database() -> AsyncIOMotorDatabase:
     if db_instance.db is None:
         settings = get_settings()
         if db_instance.client is None:
-            db_instance.client = AsyncIOMotorClient(settings.mongodb_url)
+            db_instance.client = AsyncIOMotorClient(
+                settings.mongodb_url, serverSelectionTimeoutMS=5000,
+                connectTimeoutMS=3000, socketTimeoutMS=5000, tz_aware=True,
+                compressors="zlib", zlibCompressionLevel=1,
+            )
         db_instance.db = db_instance.client[settings.mongodb_db_name]
     return db_instance.db
 

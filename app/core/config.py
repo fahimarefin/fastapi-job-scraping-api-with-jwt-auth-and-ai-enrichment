@@ -1,5 +1,6 @@
 #app/core/config.py
 from functools import lru_cache
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,6 +21,18 @@ class Settings(BaseSettings):
     http_proxy: str | None = None
     career_pages_config_path: str = "app/core/career_pages.json"
     min_request_interval: float = 0.2
+
+    # Scheduled job collection runs in the separate worker process.
+    job_refresh_interval_seconds: int = Field(default=1800, ge=60)
+    job_source_concurrency: int = Field(default=6, ge=1, le=16)
+    job_source_timeout_seconds: int = Field(default=180, ge=1, le=900)
+    job_adapter_max_pages: int = Field(default=5, ge=1, le=30)
+    job_adapter_detail_limit: int = Field(default=100, ge=1, le=500)
+    job_discovery_limit: int = Field(default=30, ge=1, le=100)
+    usajobs_api_key: str | None = None
+    usajobs_email: str | None = None
+    adzuna_app_id: str | None = None
+    adzuna_app_key: str | None = None
 
     # Candidate scraping — delay between LinkedIn profile requests (seconds)
     candidate_scrape_delay: float = 2.0

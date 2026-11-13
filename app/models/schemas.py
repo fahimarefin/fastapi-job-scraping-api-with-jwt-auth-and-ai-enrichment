@@ -10,7 +10,8 @@ from pydantic import BaseModel, Field
 # ---------------------------------------------------------------------------
 
 SCRAPE_LOCATION: str = "USA"
-SCRAPE_LIMIT: int = 10          # results requested per role per source (~800 jobs total)
+SCRAPE_LIMIT: int = 10          # collector request size per role
+MAX_TOTAL_JOBS: int = 800       # unique jobs across all sources and industries
 
 
 # ---------------------------------------------------------------------------
@@ -164,6 +165,63 @@ class JobSource(str, Enum):
     GLASSDOOR = "glassdoor"
     ZIP_RECRUITER = "zip_recruiter"
     CAREER_PAGE = "career_page"
+    DICE = "dice"
+    WELLFOUND = "wellfound"
+    BUILTIN = "builtin"
+    ADZUNA = "adzuna"
+    LADDERS = "ladders"
+    USAJOBS = "usajobs"
+    IDEALIST = "idealist"
+    HIGHEREDJOBS = "higheredjobs"
+    DIVERSITYJOBS = "diversityjobs"
+    CONSTRUCTIONJOBS = "constructionjobs"
+    EFINANCIALCAREERS = "efinancialcareers"
+    CYBERSECJOBS = "cybersecjobs"
+    EHSCAREERS = "ehscareers"
+    HANDSHAKE = "handshake"
+    SNAGAJOB = "snagajob"
+    THEMUSE = "themuse"
+    WELCOME_TO_THE_JUNGLE = "welcome_to_the_jungle"
+    MONSTER = "monster"
+    CAREERBUILDER = "careerbuilder"
+    SIMPLYHIRED = "simplyhired"
+    HIRED = "hired"
+    FLEXJOBS = "flexjobs"
+    REMOTE_CO = "remote_co"
+    WEWORKREMOTELY = "weworkremotely"
+    JOBSPRESSO = "jobspresso"
+    REMOTEOK = "remoteok"
+    REMOTIVE = "remotive"
+    WORKINGNOMADS = "workingnomads"
+    HIMALAYAS = "himalayas"
+    HEALTHECAREERS = "healthecareers"
+    DOCCAFE = "doccafe"
+    HEALTHCAREJOBSITE = "healthcarejobsite"
+    HOSPITALCAREERS = "hospitalcareers"
+    NYU_LANGONE = "nyu_langone"
+    MOUNT_SINAI = "mount_sinai"
+    NYC_HEALTH_HOSPITALS = "nyc_health_hospitals"
+    CLEVELAND_CLINIC = "cleveland_clinic"
+    COMMONSPIRIT = "commonspirit"
+    HCA_HEALTHCARE = "hca_healthcare"
+    NORTHWELL = "northwell"
+    MAYO_CLINIC = "mayo_clinic"
+    KAISER_PERMANENTE = "kaiser_permanente"
+    ASCENSION = "ascension"
+    PROVIDENCE = "providence"
+    GENESIS_HEALTHCARE = "genesis_healthcare"
+    BROOKDALE = "brookdale"
+    LIFE_CARE_CENTERS = "life_care_centers"
+    ATRIA = "atria"
+    SUNRISE = "sunrise"
+    AMAZON = "amazon"
+    GOOGLE = "google"
+    MICROSOFT = "microsoft"
+    SALESFORCE = "salesforce"
+    HUBSPOT = "hubspot"
+    ZAPIER = "zapier"
+    GITLAB = "gitlab"
+    AUTOMATTIC = "automattic"
 
 
 # ---------------------------------------------------------------------------
@@ -212,6 +270,9 @@ class JobListing(BaseModel):
     job_type: Optional[str] = None
     is_remote: Optional[bool] = None
     source: JobSource
+    source_url: Optional[str] = None
+    source_company_url: Optional[str] = None
+    valid_through: Optional[str] = None
     decision_maker: Optional[DecisionMaker] = None
     decision_makers: list[DecisionMaker] = Field(default_factory=list)
     scraped_at: datetime = Field(default_factory=datetime.utcnow)
@@ -234,6 +295,11 @@ class ScrapeAllResponse(BaseModel):
     total_roles_scraped: int
     total_jobs_found: int
     industries: dict[str, list[RoleResult]]
+    ready: bool = False
+    last_updated_at: Optional[datetime] = None
+    refresh_status: str = "warming_up"
+    source_statuses: dict[str, dict] = Field(default_factory=dict)
+    refresh_error: Optional[str] = None
 
 
 class HealthResponse(BaseModel):
@@ -290,6 +356,7 @@ class UnprocessedJobsResponse(BaseModel):
     location: str = SCRAPE_LOCATION
     total_scraped: int
     total_unprocessed: int
+    errors: dict[str, dict[str, str]] = Field(default_factory=dict)
     jobs: list[JobListing]
 
 

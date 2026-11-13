@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import time
+from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from app.core.config import get_settings
@@ -65,6 +66,16 @@ async def _fetch_all_listings(cfg: dict) -> list[JobListing]:
         cards = soup.select(cfg["list_selector"])
         listings: list[JobListing] = []
 
+        from app.scrapers.job_parsing import parse_posting, _postings
+        for script in soup.select('script[type="application/ld+json"]'):
+            try:
+                for data in _postings(json.loads(script.string or script.get_text())):
+                    job = parse_posting(data, url, {"id": "career_page", "url": url})
+                    if job:
+                        listings.append(job)
+            except (TypeError, ValueError):
+                continue
+
         for card in cards:
             title_el = card.select_one(cfg["title_selector"])
             if not title_el:
@@ -73,6 +84,7 @@ async def _fetch_all_listings(cfg: dict) -> list[JobListing]:
             location_sel = cfg.get("location_selector", "")
             link_sel = cfg.get("link_selector", "")
             link_attr = cfg.get("link_attr", "href")
+            date_el = card.select_one(cfg["date_selector"]) if cfg.get("date_selector") else None
 
             location_el = card.select_one(location_sel) if location_sel else None
             link_el = card.select_one(link_sel) if link_sel else None
@@ -82,7 +94,9 @@ async def _fetch_all_listings(cfg: dict) -> list[JobListing]:
                     title=title_el.get_text(strip=True),
                     company=cfg.get("company"),
                     location=location_el.get_text(strip=True) if location_el else None,
-                    url=link_el.get(link_attr) if link_el else url,
+                    url=urljoin(url, link_el.get(link_attr) or url) if link_el else url,
+                    source_url=url,
+                    posted_at=(date_el.get("datetime") or date_el.get_text(strip=True)) if date_el else None,
                     source=JobSource.CAREER_PAGE,
                 )
             )

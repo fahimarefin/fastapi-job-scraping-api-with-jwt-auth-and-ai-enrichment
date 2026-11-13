@@ -74,6 +74,7 @@ def _parse_post_date(value: Any) -> tuple[str | None, str | None, float | None, 
     # 1. Check if datetime.date or datetime.datetime
     if isinstance(value, (datetime, pd.Timestamp)):
         dt = value.to_pydatetime() if hasattr(value, "to_pydatetime") else value
+        now = datetime.now(dt.tzinfo) if dt.tzinfo else now
         diff_days = (now - dt).total_seconds() / 86400.0
         diff_days = max(0.0, round(diff_days, 1))
         return raw_str, dt.strftime("%Y-%m-%d"), diff_days, (diff_days <= 2.5)
@@ -181,9 +182,8 @@ def _scrape_one_site_sync(
     Scrape a single site synchronously (runs in a thread pool).
     Returns (site, dataframe_or_None, error_message_or_None).
     """
-    from jobspy import scrape_jobs  # lazy import — keeps startup fast
-
     try:
+        from jobspy import scrape_jobs  # lazy import — keeps startup fast
         kwargs: dict[str, Any] = {
             "site_name": [site],
             "search_term": query,
